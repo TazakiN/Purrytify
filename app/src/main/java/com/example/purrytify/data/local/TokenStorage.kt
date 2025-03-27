@@ -53,4 +53,20 @@ class TokenStorage @Inject constructor(@ApplicationContext private val context: 
             remove("refresh_token")
         }
     }
+
+    // Access token management
+    private var accessToken: String? = null
+
+    fun saveAccessToken(token: String) {
+        accessToken = token
+    }
+
+    fun getAccessToken(): String? {
+        return accessToken
+    }
+
+    fun deleteAccessToken() {
+        accessToken = null
+    }
+
 }

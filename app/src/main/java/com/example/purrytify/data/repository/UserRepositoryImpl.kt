@@ -17,6 +17,10 @@ class UserRepositoryImpl @Inject constructor(
                 response.refreshToken?.let {
                     tokenStorage.saveRefreshToken(it)
                 }
+
+                response.accessToken?.let {
+                    tokenStorage.saveAccessToken(it)
+                }
             }
             result
         } catch (e :Exception) {
