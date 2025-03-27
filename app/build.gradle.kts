@@ -72,6 +72,7 @@ dependencies {
     kapt(libs.hilt.android.compiler)
 
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.security.crypto)
 }
 
 // Allow references to generated code
