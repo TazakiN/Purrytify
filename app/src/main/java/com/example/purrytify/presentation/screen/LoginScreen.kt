@@ -11,7 +11,7 @@ import com.example.purrytify.presentation.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit // Callback untuk navigasi setelah login berhasil
+    onLoginSuccess: () -> Unit
 ) {
     val viewModel: LoginViewModel = hiltViewModel()
     var email by remember { mutableStateOf("") }
@@ -63,7 +63,6 @@ fun LoginScreen(
                 result.isSuccess -> {
                     Text("Login Successful!", color = MaterialTheme.colorScheme.primary)
                     LaunchedEffect(Unit) {
-                        // Panggil callback setelah login berhasil
                         onLoginSuccess()
                     }
                 }
@@ -74,7 +73,6 @@ fun LoginScreen(
                     )
                 }
                 else -> {
-                    // Loading state (opsional, bisa ditambahkan di ViewModel)
                     if (viewModel.isLoading.collectAsState().value) {
                         CircularProgressIndicator()
                     }

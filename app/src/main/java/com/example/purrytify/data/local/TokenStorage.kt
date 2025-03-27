@@ -25,7 +25,7 @@ class TokenStorage @Inject constructor(@ApplicationContext private val context: 
     private val sharedPreferences = try {
         EncryptedSharedPreferences.create(
             context,
-            "secret_shared_prefs", // Filename for your encrypted preferences
+            "secret_shared_prefs",
             masterKeyAlias,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
@@ -38,6 +38,7 @@ class TokenStorage @Inject constructor(@ApplicationContext private val context: 
         null
     }
 
+    // Refresh token management
     fun saveRefreshToken(refreshToken: String) {
         sharedPreferences?.edit(commit = false) {
             putString("refresh_token", refreshToken)
