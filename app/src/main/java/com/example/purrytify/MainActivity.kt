@@ -5,16 +5,26 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.example.purrytify.ui.theme.PurrytifyTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.purrytify.presentation.screen.HomeScreen
+import com.example.purrytify.presentation.screen.LoginScreen
+import com.example.purrytify.presentation.theme.PurrytifyTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+sealed class Screen(val route: String) {
+    object Login : Screen("login")
+    object Home : Screen("home") // Contoh screen setelah login
+}
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val viewModel by viewModels<SplahViewModel>()
@@ -25,19 +35,45 @@ class MainActivity : ComponentActivity() {
             setKeepOnScreenCondition {
                 !viewModel.isReady.value
             }
-            // check if user is logged in
         }
         enableEdgeToEdge()
         setContent {
             PurrytifyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Column {
-                        Text(
-                            text = "Hello Purrytify!",
-                            modifier = Modifier
-                                .padding(innerPadding)
-                                .padding(16.dp)
-                        )
+                val navController = rememberNavController()
+                val isReady by viewModel.isReady.collectAsStateWithLifecycle()
+                val isLoggedIn = false // TODO: Implement logic to check if user is logged in
+
+                LaunchedEffect(isReady) {
+//                    if (isReady) {
+//                        if (isLoggedIn) {
+//                            navController.navigate(Screen.Home.route) {
+//                                popUpTo(Screen.Splash.route) { inclusive = true }
+//                            }
+//                        } else {
+//                            navController.navigate(Screen.Login.route) {
+//                                popUpTo(Screen.Splash.route) { inclusive = true }
+//                            }
+//                        }
+//                    }
+                }
+
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    NavHost(
+                        navController = navController, startDestination = Screen.Login.route
+                    ) {
+//                        composable(Screen.Splash.route) {
+//                            // Anda bisa menampilkan logo atau animasi splash di sini jika perlu
+//                        }
+                        composable(Screen.Login.route) {
+                            LoginScreen(onLoginSuccess = {
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
+                                }
+                            })
+                        }
+                        composable(Screen.Home.route) {
+                            HomeScreen()
+                        }
                     }
                 }
             }
