@@ -13,7 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-): ViewModel() {
+) : ViewModel() {
     private val _loginResult = MutableStateFlow<Result<LoginResponseDTO>?>(null)
     val loginResult: StateFlow<Result<LoginResponseDTO>?> = _loginResult
 

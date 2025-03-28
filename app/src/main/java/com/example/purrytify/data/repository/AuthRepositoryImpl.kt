@@ -2,17 +2,18 @@ package com.example.purrytify.data.repository
 
 import com.example.purrytify.data.local.TokenStorage
 import com.example.purrytify.data.model.LoginResponseDTO
-import com.example.purrytify.data.remote.UserRemoteDataSource
-import com.example.purrytify.domain.repository.UserRepository
+import com.example.purrytify.data.model.RefreshTokenResponseDTO
+import com.example.purrytify.data.remote.AuthRemoteDataSource
+import com.example.purrytify.domain.repository.AuthRepository
 import javax.inject.Inject
 
-class UserRepositoryImpl @Inject constructor(
-    private val userRemoteDataSource: UserRemoteDataSource,
+class AuthRepositoryImpl @Inject constructor(
+    private val authRemoteDataSource: AuthRemoteDataSource,
     private val tokenStorage: TokenStorage
-) : UserRepository {
+) : AuthRepository {
     override suspend fun login(email: String, password: String): Result<LoginResponseDTO> {
         return try {
-            val result = userRemoteDataSource.login(email, password)
+            val result = authRemoteDataSource.login(email, password)
             result.onSuccess { response ->
                 response.refreshToken?.let {
                     tokenStorage.saveRefreshToken(it)
@@ -23,7 +24,16 @@ class UserRepositoryImpl @Inject constructor(
                 }
             }
             result
-        } catch (e :Exception) {
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun logout(): Result<Unit> {
+        return try {
+            tokenStorage.clearTokens()
+            Result.success(Unit)
+        } catch (e: Exception) {
             Result.failure(e)
         }
     }

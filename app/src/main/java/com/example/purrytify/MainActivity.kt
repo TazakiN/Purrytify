@@ -14,14 +14,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LoginScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
+import com.example.purrytify.worker.TokenExpiryWorker
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.concurrent.TimeUnit
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    object Home : Screen("home") // Contoh screen setelah login
+    object Home : Screen("home")
 }
 
 @AndroidEntryPoint
@@ -61,9 +66,6 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController, startDestination = Screen.Login.route
                     ) {
-//                        composable(Screen.Splash.route) {
-//                            // Anda bisa menampilkan logo atau animasi splash di sini jika perlu
-//                        }
                         composable(Screen.Login.route) {
                             LoginScreen(onLoginSuccess = {
                                 navController.navigate(Screen.Home.route) {
@@ -78,5 +80,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        scheduleTokenExpiryCheck()
+    }
+
+    private fun scheduleTokenExpiryCheck() {
+        val periodicWorkRequest = PeriodicWorkRequestBuilder<TokenExpiryWorker>(
+            repeatInterval = 1, // Interval pengecekan 4 menit
+            repeatIntervalTimeUnit = TimeUnit.MINUTES
+        )
+            .build()
+
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "TokenExpiryCheck",
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodicWorkRequest
+        )
     }
 }
