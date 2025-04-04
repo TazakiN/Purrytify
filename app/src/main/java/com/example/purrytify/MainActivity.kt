@@ -15,14 +15,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.purrytify.data.service.TokenRefreshService
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LoginScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
-import com.example.purrytify.data.service.TokenRefreshService
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
+import com.example.purrytify.presentation.viewmodel.StartupLoginState
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import com.example.purrytify.presentation.viewmodel.StartupLoginState
 
 sealed class Screen(val route: String) {
     data object Login : Screen("login")
