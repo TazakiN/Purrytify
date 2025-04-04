@@ -1,7 +1,7 @@
 package com.example.purrytify.di
 
-import com.example.purrytify.data.repository.UserRepositoryImpl
-import com.example.purrytify.domain.repository.UserRepository
+import com.example.purrytify.data.repository.AuthRepositoryImpl
+import com.example.purrytify.domain.repository.AuthRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -13,7 +13,7 @@ import javax.inject.Singleton
 abstract class RepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindUserRepository(
-        userRepositoryImpl: UserRepositoryImpl
-    ): UserRepository
+    abstract fun bindAuthRepository(
+        authRepositoryImpl: AuthRepositoryImpl
+    ): AuthRepository
 }

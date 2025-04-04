@@ -8,7 +8,7 @@ import javax.inject.Singleton
 @Singleton
 class AuthInterceptor @Inject constructor(
     private val tokenStorage: TokenStorage
-): Interceptor {
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         val originalRequest = chain.request()
         val accessToken = tokenStorage.getAccessToken()

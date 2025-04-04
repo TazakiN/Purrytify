@@ -66,12 +66,14 @@ fun LoginScreen(
                         onLoginSuccess()
                     }
                 }
+
                 result.isFailure -> {
                     Text(
                         "Login Failed: ${result.exceptionOrNull()?.message ?: "Unknown error"}",
                         color = MaterialTheme.colorScheme.error
                     )
                 }
+
                 else -> {
                     if (viewModel.isLoading.collectAsState().value) {
                         CircularProgressIndicator()

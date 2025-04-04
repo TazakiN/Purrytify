@@ -49,7 +49,7 @@ class TokenStorage @Inject constructor(@ApplicationContext private val context: 
         return sharedPreferences?.getString("refresh_token", null)
     }
 
-    fun deleteRefreshToken() {
+    private fun deleteRefreshToken() {
         sharedPreferences?.edit(commit = false) {
             remove("refresh_token")
         }
@@ -66,8 +66,12 @@ class TokenStorage @Inject constructor(@ApplicationContext private val context: 
         return accessToken
     }
 
-    fun deleteAccessToken() {
+    private fun deleteAccessToken() {
         accessToken = null
     }
 
+    fun clearTokens() {
+        deleteRefreshToken()
+        deleteAccessToken()
+    }
 }
