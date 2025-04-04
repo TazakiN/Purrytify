@@ -20,7 +20,7 @@ class TokenRefreshService @Inject constructor(
 
     companion object {
         private const val TAG = "TokenRefreshService"
-        private val TOKEN_EXPIRY_CHECK_INTERVAL = TimeUnit.MINUTES.toMillis(1) // Persingkat untuk testing
+        private val TOKEN_EXPIRY_CHECK_INTERVAL = TimeUnit.MINUTES.toMillis(5)
     }
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
