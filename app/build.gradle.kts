@@ -72,13 +72,9 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.hilt.work)
 
     // encrypted shared preferences
     implementation(libs.androidx.security.crypto)
-
-    // work manager
-    implementation(libs.androidx.work.runtime.ktx)
 }
 
 // Allow references to generated code
