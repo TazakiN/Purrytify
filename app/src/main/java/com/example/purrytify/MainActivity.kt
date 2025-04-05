@@ -5,28 +5,43 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.purrytify.data.service.TokenRefreshService
 import com.example.purrytify.presentation.screen.HomeScreen
+import com.example.purrytify.presentation.screen.LibraryScreen
 import com.example.purrytify.presentation.screen.LoginScreen
+import com.example.purrytify.presentation.screen.ProfileScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-sealed class Screen(val route: String) {
-    data object Login : Screen("login")
-    data object Home : Screen("home")
+sealed class Screen(val route: String, val title: String, val icon: Int) {
+    data object Login : Screen("login", "Login", R.drawable.ic_login)
+    data object Home : Screen("home", "Home", R.drawable.ic_home)
+    data object Library : Screen("library", "Your Library", R.drawable.ic_library)
+    data object Profile : Screen("profile", "Profile", R.drawable.ic_profile)
 }
 
 @AndroidEntryPoint
@@ -74,21 +89,65 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Surface(color = MaterialTheme.colorScheme.background) {
-                    NavHost(
-                        navController = navController,
-                        startDestination = if (startupLoginState == StartupLoginState.LoggedIn && isReady) Screen.Home.route else Screen.Login.route
-                    ) {
-                        composable(Screen.Login.route) {
-                            LoginScreen(onLoginSuccess = {
-                                tokenRefreshService.start()
-                                navController.navigate(Screen.Home.route) {
-                                    popUpTo(Screen.Login.route) { inclusive = true }
+                val bottomNavItems = listOf(Screen.Home, Screen.Library, Screen.Profile)
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                Scaffold(
+                    bottomBar = {
+                        if (currentRoute != Screen.Login.route) {
+                            BottomAppBar {
+                                NavigationBar {
+                                    bottomNavItems.forEach { screen ->
+                                        NavigationBarItem(
+                                            icon = { Icon(painterResource(id = screen.icon), contentDescription = screen.title) },
+                                            label = { Text(screen.title) },
+                                            selected = currentRoute == screen.route,
+                                            onClick = {
+                                                navController.navigate(screen.route) {
+                                                    launchSingleTop = true
+                                                    restoreState = true
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
-                            })
+                            }
                         }
-                        composable(Screen.Home.route) {
-                            HomeScreen()
+                    }
+                ) { innerPadding ->
+                    Surface(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        NavHost(
+                            navController = navController,
+                            startDestination = if (startupLoginState == StartupLoginState.LoggedIn && isReady) Screen.Home.route else Screen.Login.route
+                        ) {
+                            composable(Screen.Login.route) {
+                                LoginScreen(onLoginSuccess = {
+                                    tokenRefreshService.start()
+                                    navController.navigate(Screen.Home.route) {
+                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                    }
+                                })
+                            }
+                            composable(Screen.Home.route) {
+                                HomeScreen()
+                            }
+                            composable(Screen.Library.route) {
+                                LibraryScreen()
+                            }
+                            composable(Screen.Profile.route) {
+                                ProfileScreen(onLogoutSuccess = {
+                                    tokenRefreshService.stop()
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
+                                })
+                            }
                         }
                     }
                 }
