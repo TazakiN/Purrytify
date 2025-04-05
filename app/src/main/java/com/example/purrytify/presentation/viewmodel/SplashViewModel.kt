@@ -37,8 +37,10 @@ class SplashViewModel @Inject constructor(
                     val refreshResponse = authService.refreshToken(mapOf("refreshToken" to refreshToken))
                     if (refreshResponse.isSuccessful) {
                         val newAccessToken = refreshResponse.body()?.accessToken
-                        if (!newAccessToken.isNullOrBlank()) {
+                        val newRefreshToken = refreshResponse.body()?.refreshToken
+                        if (!newAccessToken.isNullOrBlank() && !newRefreshToken.isNullOrBlank()) {
                             tokenStorage.saveAccessToken(newAccessToken)
+                            tokenStorage.saveRefreshToken(newRefreshToken)
                             _startupLoginState.value = StartupLoginState.LoggedIn
                         } else {
                             _startupLoginState.value = StartupLoginState.LoggedOut
