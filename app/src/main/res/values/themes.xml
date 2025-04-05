@@ -10,7 +10,7 @@
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <item name="postSplashScreenTheme">@style/Theme.Purrytify</item>
-        <item name="android:windowBackground">@drawable/asset_3</item>
+        <item name="android:windowBackground">@mipmap/ic_launcher_foreground</item>
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>
