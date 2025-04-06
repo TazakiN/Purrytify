@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.purrytify.presentation.theme.Green
 
 @Composable
 fun Button(
@@ -26,7 +27,7 @@ fun Button(
             .fillMaxWidth()
             .height(height),
         shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1DB954))
+        colors = ButtonDefaults.buttonColors(containerColor = Green)
     ) {
         Text(text, color = Color.White, fontSize = 16.sp)
     }
