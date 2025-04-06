@@ -10,13 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.purrytify.R
+import com.example.purrytify.presentation.fragments.Button
+import com.example.purrytify.presentation.fragments.CustomInputField
 import com.example.purrytify.presentation.viewmodel.LoginViewModel
 
 @Composable
@@ -98,51 +95,24 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedTextField(
+                CustomInputField(
+                    label = "Email",
                     value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email", color = Color.Gray) },
-                    singleLine = true,
-                    textStyle = TextStyle(color = Color.White),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.Gray,
-                        cursorColor = Color.White,
-                        focusedLabelColor = Color.White,
-                        unfocusedLabelColor = Color.Gray
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                    onValueChange = { email = it }
                 )
 
-                OutlinedTextField(
+                CustomInputField(
+                    label = "Password",
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Password", color = Color.Gray) },
-                    singleLine = true,
-                    textStyle = TextStyle(color = Color.White),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.Gray,
-                        cursorColor = Color.White,
-                        focusedLabelColor = Color.White,
-                        unfocusedLabelColor = Color.Gray
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                    isPassword = true
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { viewModel.login(email, password) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1DB954))
-                ) {
-                    Text("Log In", color = Color.White, fontSize = 16.sp)
-                }
+                    text = "Log In",
+                    onClick = { viewModel.login(email, password) }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 

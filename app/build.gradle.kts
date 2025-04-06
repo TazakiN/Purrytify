@@ -75,6 +75,8 @@ dependencies {
 
     // encrypted shared preferences
     implementation(libs.androidx.security.crypto)
+
+    implementation(libs.androidx.material.icons.extended)
 }
 
 // Allow references to generated code
