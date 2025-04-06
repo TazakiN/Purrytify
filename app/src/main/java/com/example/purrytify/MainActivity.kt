@@ -34,6 +34,7 @@ import com.example.purrytify.presentation.screen.ProfileScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
+import com.example.purrytify.presentation.fragments.BottomNavigationBar
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -83,7 +84,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                             StartupLoginState.Loading -> {
-                                // TODO: Handle loading state (optional)
+                                // TODO: Handle loading state
                             }
                         }
                     }
@@ -97,21 +98,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         if (currentRoute != Screen.Login.route) {
                             BottomAppBar {
-                                NavigationBar {
-                                    bottomNavItems.forEach { screen ->
-                                        NavigationBarItem(
-                                            icon = { Icon(painterResource(id = screen.icon), contentDescription = screen.title) },
-                                            label = { Text(screen.title) },
-                                            selected = currentRoute == screen.route,
-                                            onClick = {
-                                                navController.navigate(screen.route) {
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
+                                BottomNavigationBar(navController = navController, items = bottomNavItems)
                             }
                         }
                     }
