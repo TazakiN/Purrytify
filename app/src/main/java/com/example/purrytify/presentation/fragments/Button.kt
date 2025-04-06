@@ -1,36 +1,34 @@
-//package com.example.purrytify.presentation.fragments
-//
-//import android.widget.Button
-//import androidx.compose.ui.Modifier
-//
-//fun Button(
-//    text: String,
-//    onClick: () -> Unit,
-//    modifier: Modifier = Modifier,
-//    enabled: Boolean = true,
-//    isLoading: Boolean = false
-//) {
-//    Button(
-//        onClick = onClick,
-//        modifier = modifier,
-//        enabled = enabled,
-//        colors = ButtonDefaults.buttonColors(
-//            containerColor = MaterialTheme.colorScheme.primary,
-//            contentColor = Color.White
-//        ),
-//        shape = RoundedCornerShape(8.dp),
-//        elevation = ButtonDefaults.buttonElevation(
-//            defaultElevation = 4.dp,
-//            pressedElevation = 8.dp
-//        )
-//    ) {
-//        if (isLoading) {
-//            CircularProgressIndicator(
-//                color = Color.White,
-//                modifier = Modifier.size(16.dp)
-//            )
-//        } else {
-//            Text(text)
-//        }
-//    }
-//})
+package com.example.purrytify.presentation.fragments
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.purrytify.presentation.theme.Green
+
+@Composable
+fun Button(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    height: Dp = 48.dp
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Green)
+    ) {
+        Text(text, color = Color.White, fontSize = 16.sp)
+    }
+}
