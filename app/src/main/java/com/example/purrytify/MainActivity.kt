@@ -8,17 +8,14 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -27,14 +24,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.purrytify.data.service.TokenRefreshService
+import com.example.purrytify.presentation.fragments.BottomNavigationBar
+import com.example.purrytify.presentation.fragments.NetworkStatusSnackbarHost
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LibraryScreen
 import com.example.purrytify.presentation.screen.LoginScreen
 import com.example.purrytify.presentation.screen.ProfileScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
+import com.example.purrytify.presentation.viewmodel.NetworkViewModel
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
-import com.example.purrytify.presentation.fragments.BottomNavigationBar
+import com.example.purrytify.domain.model.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -49,6 +49,7 @@ sealed class Screen(val route: String, val title: String, val icon: Int) {
 class MainActivity : ComponentActivity() {
 
     private val viewModel by viewModels<SplashViewModel>()
+    private val networkViewModel by viewModels<NetworkViewModel>()
 
     @Inject
     lateinit var tokenRefreshService: TokenRefreshService
@@ -68,6 +69,9 @@ class MainActivity : ComponentActivity() {
                 navController = rememberNavController()
                 val isReady by viewModel.isReady.collectAsStateWithLifecycle()
                 val startupLoginState by viewModel.startupLoginState.collectAsStateWithLifecycle(initialValue = StartupLoginState.Loading)
+                val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
+
+                val snackbarHostState = remember { SnackbarHostState() }
 
                 LaunchedEffect(isReady) {
                     if (isReady) {
@@ -90,11 +94,27 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                // Show snackbar on network status change
+                LaunchedEffect(networkStatus) {
+                    if (networkStatus != NetworkStatus.Available) {
+                        val message = when (networkStatus) {
+                            NetworkStatus.Unavailable -> "Tidak ada koneksi internet."
+                            NetworkStatus.Lost -> "Koneksi internet terputus."
+                            NetworkStatus.Losing -> "Koneksi internet tidak stabil."
+                            else -> "Unknown network error."
+                        }
+                        snackbarHostState.showSnackbar(message)
+                    }
+                }
+
                 val bottomNavItems = listOf(Screen.Home, Screen.Library, Screen.Profile)
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
                 Scaffold(
+                    snackbarHost = {
+                        NetworkStatusSnackbarHost(hostState = snackbarHostState)
+                    },
                     bottomBar = {
                         if (currentRoute != Screen.Login.route) {
                             BottomAppBar {
