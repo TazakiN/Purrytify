@@ -151,8 +151,8 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp),
-                    horizontalArrangement = Arrangement.SpaceAround
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = userData?.songsCount?.toString() ?: "135", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
