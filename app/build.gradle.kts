@@ -77,6 +77,10 @@ dependencies {
     implementation(libs.androidx.security.crypto)
 
     implementation(libs.androidx.material.icons.extended)
+
+    // coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }
 
 // Allow references to generated code
