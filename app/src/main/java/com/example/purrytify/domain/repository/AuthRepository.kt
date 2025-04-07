@@ -6,4 +6,5 @@ import com.example.purrytify.data.model.RefreshTokenResponseDTO
 interface AuthRepository {
     suspend fun login(email: String, password: String): Result<LoginResponseDTO>
     suspend fun logout(): Result<Unit>
+    fun getUsername(): String?
 }

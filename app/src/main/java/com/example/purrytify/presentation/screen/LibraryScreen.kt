@@ -1,35 +1,37 @@
 package com.example.purrytify.presentation.screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import android.view.LayoutInflater
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.purrytify.R
+import com.example.purrytify.presentation.adapter.SongAdapter
+import com.example.purrytify.presentation.viewmodel.LibraryViewModel
 
 @Composable
-fun LibraryScreen() {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .wrapContentSize(Alignment.Center),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Selamat datang di Library",
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineLarge
-            )
+fun LibraryScreen(
+    viewModel: LibraryViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val songs by viewModel.allSongs.collectAsState()
+
+    AndroidView(
+        factory = { ctx ->
+            // Inflate layout that contains RecyclerView
+            val view = LayoutInflater.from(ctx).inflate(R.layout.activity_library, null, false)
+            val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
+            recyclerView.layoutManager = LinearLayoutManager(ctx)
+            recyclerView.adapter = SongAdapter(songs)
+            view
+        },
+        update = { view ->
+            val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
+            recyclerView.adapter = SongAdapter(songs) // Update when data changes
         }
-    }
+    )
 }
