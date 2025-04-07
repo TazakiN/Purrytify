@@ -50,4 +50,14 @@ object RetrofitClient {
     fun provideAuthService(retrofit: Retrofit): AuthService {
         return retrofit.create(AuthService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideUserService(retrofit: Retrofit): UserService {
+        return retrofit.create(UserService::class.java)
+    }
+
+    fun profilePictureUrlBuilder(profilePhoto: String): String {
+        return "$BASE_URL/uploads/profile-picture/$profilePhoto"
+    }
 }
