@@ -5,7 +5,7 @@ import com.example.purrytify.domain.repository.UserRepository
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val userRepository: UserRepository) {
-    suspend operator fun invoke(): User {
+    suspend operator fun invoke(): Result<User> {
         return userRepository.getUserProfile()
     }
 }

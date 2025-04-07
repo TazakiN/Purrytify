@@ -47,6 +47,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.purrytify.R
 import com.example.purrytify.presentation.theme.Black
+import com.example.purrytify.presentation.theme.Green
 import com.example.purrytify.presentation.theme.Teal
 import com.example.purrytify.presentation.viewmodel.ProfileViewModel
 import kotlinx.coroutines.launch
@@ -90,7 +91,7 @@ fun ProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
 
-                    if (userData?.profileImageUrl.isNullOrEmpty()) {
+                    if (userData?.profilePhoto.isNullOrEmpty()) {
                         Icon(
                             imageVector = Icons.Filled.AccountCircle,
                             contentDescription = "Profile Picture",
@@ -102,7 +103,7 @@ fun ProfileScreen(
                     } else {
                         AsyncImage(
                             model = ImageRequest.Builder(context = LocalContext.current)
-                                .data(userData?.profileImageUrl)
+                                .data(userData?.profilePhoto)
                                 .crossfade(true)
                                 .build(),
                             contentDescription = "Profile Picture",
@@ -116,17 +117,6 @@ fun ProfileScreen(
                     }
                 }
 
-                /* kalo mau Implement edit profile */
-    //            IconButton(
-    //                onClick = {  },
-    //                modifier = Modifier
-    //                    .size(24.dp)
-    //                    .align(Alignment.CenterHorizontally)
-    //                    .padding(top = 8.dp)
-    //            ) {
-    //                Icon(Icons.Filled.Edit, contentDescription = "Edit Profile", tint = Color.White)
-    //            }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
@@ -137,7 +127,7 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = userData?.country ?: "Indonesia",
+                    text = userData?.location ?: "Indonesia",
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
@@ -191,7 +181,7 @@ fun ProfileScreen(
                                     onLogoutSuccess()
                                 }
                             }) {
-                                Text("Yes", color = Color(0xFF1DB954))
+                                Text("Yes", color = Green)
                             }
                         },
                         dismissButton = {
