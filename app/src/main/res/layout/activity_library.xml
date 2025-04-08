@@ -1,9 +1,9 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="#121212">
 
     <!-- Judul "Your Library" -->
     <TextView
@@ -13,6 +13,7 @@
             android:text="Your Library"
             android:textSize="20sp"
             android:textStyle="bold"
+            android:textColor="@color/white"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -24,6 +25,7 @@
             android:src="@android:drawable/ic_input_add"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Add Song"
+            app:tint="@android:color/white"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -43,13 +45,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="All"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="16dp"
+                app:cornerRadius="16dp"
+                android:backgroundTint="#1db954"
+                android:textColor="@color/black" />
 
         <Button
                 android:id="@+id/btnLikedSongs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Liked" />
+                android:text="Liked"
+                app:cornerRadius="16dp"
+                android:backgroundTint="#1db954"
+                android:textColor="@color/black" />
     </LinearLayout>
 
     <!-- RecyclerView untuk daftar lagu -->
@@ -57,9 +65,10 @@
             android:id="@+id/recyclerViewSongs"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="20dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toBottomOf="@id/tabsContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

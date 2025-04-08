@@ -3,15 +3,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="#121212">
 
     <TextView
             android:id="@+id/textNewSongs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New songs"
+            android:textSize="20sp"
+            android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:paddingBottom="8dp" />
+            android:paddingBottom="8dp"
+            android:textColor="@color/white" />
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewNewSongs"
@@ -26,8 +30,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Recently played"
+            android:textSize="20sp"
+            android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:paddingBottom="8dp" />
+            android:paddingBottom="8dp"
+            android:textColor="@color/white"/>
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewRecentlyPlayed"
