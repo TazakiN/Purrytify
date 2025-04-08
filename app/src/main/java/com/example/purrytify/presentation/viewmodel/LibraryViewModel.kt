@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.purrytify.domain.model.Song
 import com.example.purrytify.domain.usecase.AddSongUseCase
+import com.example.purrytify.domain.usecase.UpdateSongUseCase
 import com.example.purrytify.domain.usecase.LoadSongUseCase
 import com.example.purrytify.domain.usecase.UpdateLastPlayedUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +18,7 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     loadSongUseCase: LoadSongUseCase,
     private val addSongUseCase: AddSongUseCase,
+    private val updateSongUseCase: UpdateSongUseCase,
     private val updateLastPlayedUseCase: UpdateLastPlayedUseCase
 ) : ViewModel() {
 
@@ -31,6 +33,16 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 addSongUseCase(song)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun updateSong(song: Song) {
+        viewModelScope.launch {
+            try {
+                updateSongUseCase(song)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

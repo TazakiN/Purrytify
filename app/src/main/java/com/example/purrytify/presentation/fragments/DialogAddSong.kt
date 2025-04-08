@@ -39,7 +39,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
             songUri = it
 
             val fileName = getFileNameFromUri(it)
-            binding.txtSelectedFileName.text = "File: $fileName"
+            binding.txtSelectedFileName.text = fileName
 
             lifecycleScope.launch {
                 delay(200)
@@ -54,7 +54,6 @@ class DialogAddSong : BottomSheetDialogFragment() {
                     duration = durationStr?.toLongOrNull() ?: 0
                     binding.inputTitle.setText(title ?: "")
                     binding.inputArtist.setText(artist ?: "")
-                    binding.txtDuration.text = "Durasi: ${duration / 1000} detik"
 
                     mmr.release()
                 } catch (e: Exception) {
@@ -73,6 +72,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
             )
             selectedArtworkUri = it
             binding.imgArtworkPreview.setImageURI(it)
+            binding.txtArtworkLabel.text = "Photo Selected" // ✅ Update label di sini
         }
     }
 
@@ -87,12 +87,16 @@ class DialogAddSong : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
 
-        binding.btnChooseSong.setOnClickListener {
+        binding.boxArtwork.setOnClickListener {
+            pickImage.launch(arrayOf("image/*"))
+        }
+
+        binding.boxSong.setOnClickListener {
             pickAudio.launch(arrayOf("audio/*"))
         }
 
-        binding.btnChooseArtwork.setOnClickListener {
-            pickImage.launch(arrayOf("image/*"))
+        binding.btnCancel.setOnClickListener {
+            dismiss()
         }
 
         binding.btnSave.setOnClickListener {

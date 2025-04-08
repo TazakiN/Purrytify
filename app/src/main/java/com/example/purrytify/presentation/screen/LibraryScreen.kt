@@ -4,15 +4,10 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.view.LayoutInflater
 import android.widget.Button
-import android.widget.Toast
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,7 +25,6 @@ fun LibraryScreen(
     val context = LocalContext.current
     val allSongs by viewModel.allSongs.collectAsState()
 
-    // Filter mode state
     var showLikedOnly by remember { mutableStateOf(false) }
 
     val filteredSongs = if (showLikedOnly) {
@@ -42,10 +36,9 @@ fun LibraryScreen(
     AndroidView(
         factory = { ctx ->
             val view = LayoutInflater.from(ctx).inflate(R.layout.activity_library, null, false)
+
             val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
             val addButton = view.findViewById<ImageButton>(R.id.btnAddSong)
-
-
             val btnAll = view.findViewById<Button>(R.id.btnAllSongs)
             val btnLiked = view.findViewById<Button>(R.id.btnLikedSongs)
 
@@ -76,14 +69,32 @@ fun LibraryScreen(
 
             recyclerView.adapter = adapter
 
+            fun updateButtonStyles() {
+                if (showLikedOnly) {
+                    btnLiked.setBackgroundColor(0xFF1DB954.toInt())
+                    btnLiked.setTextColor(0xFF000000.toInt())
+
+                    btnAll.setBackgroundColor(0xFF212121.toInt())
+                    btnAll.setTextColor(0xFFFFFFFF.toInt())
+                } else {
+                    btnAll.setBackgroundColor(0xFF1DB954.toInt())
+                    btnAll.setTextColor(0xFF000000.toInt())
+
+                    btnLiked.setBackgroundColor(0xFF212121.toInt())
+                    btnLiked.setTextColor(0xFFFFFFFF.toInt())
+                }
+            }
+
             btnAll.setOnClickListener {
                 showLikedOnly = false
                 adapter.updateSongs(allSongs)
+                updateButtonStyles()
             }
 
             btnLiked.setOnClickListener {
                 showLikedOnly = true
                 adapter.updateSongs(allSongs.filter { it.isLiked })
+                updateButtonStyles()
             }
 
             addButton.setOnClickListener {
@@ -92,12 +103,31 @@ fun LibraryScreen(
                 }
             }
 
+            updateButtonStyles()
+
             view
         },
         update = { view ->
             val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
             val adapter = recyclerView.adapter as? SongAdapter
             adapter?.updateSongs(filteredSongs)
+
+            val btnAll = view.findViewById<Button>(R.id.btnAllSongs)
+            val btnLiked = view.findViewById<Button>(R.id.btnLikedSongs)
+
+            if (showLikedOnly) {
+                btnLiked.setBackgroundColor(0xFF1DB954.toInt())
+                btnLiked.setTextColor(0xFF000000.toInt())
+
+                btnAll.setBackgroundColor(0xFF212121.toInt())
+                btnAll.setTextColor(0xFFFFFFFF.toInt())
+            } else {
+                btnAll.setBackgroundColor(0xFF1DB954.toInt())
+                btnAll.setTextColor(0xFF000000.toInt())
+
+                btnLiked.setBackgroundColor(0xFF212121.toInt())
+                btnLiked.setTextColor(0xFFFFFFFF.toInt())
+            }
         }
     )
 }
