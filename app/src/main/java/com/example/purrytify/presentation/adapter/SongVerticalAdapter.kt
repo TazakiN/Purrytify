@@ -7,13 +7,14 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.purrytify.R
 import com.example.purrytify.domain.model.Song
+import com.example.purrytify.R
 
-class SongAdapter(
+
+class SongVerticalAdapter(
     private var songs: List<Song>,
     private val onItemClick: (Song) -> Unit
-) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
+) : RecyclerView.Adapter<SongVerticalAdapter.SongViewHolder>() {
 
     inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val artworkImage: ImageView = itemView.findViewById(R.id.imageArtwork)
@@ -23,7 +24,7 @@ class SongAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_song, parent, false)
+            .inflate(R.layout.item_song_vertical, parent, false)
         return SongViewHolder(view)
     }
 
@@ -43,7 +44,7 @@ class SongAdapter(
         }
     }
 
-    override fun getItemCount() = songs.size
+    override fun getItemCount(): Int = songs.size
 
     fun updateSongs(newSongs: List<Song>) {
         songs = newSongs

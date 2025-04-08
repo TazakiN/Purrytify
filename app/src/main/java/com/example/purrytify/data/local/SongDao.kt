@@ -20,4 +20,13 @@ interface SongDao {
 
     @Query("SELECT * FROM songs WHERE username = :userName and isLiked = 1")
     fun getLikedSongs(userName: String): Flow<List<SongEntity>>
+
+    @Query("SELECT * FROM songs WHERE username = :userName ORDER BY createdAt DESC LIMIT 10")
+    fun getNewSongs(userName: String): Flow<List<SongEntity>>
+
+    @Query("SELECT * FROM songs WHERE username = :userName and lastPlayed IS NOT NULL ORDER BY lastPlayed DESC LIMIT 10")
+    fun getRecentlyPlayed(userName: String): Flow<List<SongEntity>>
+
+    @Query("UPDATE songs SET lastPlayed = :timestamp WHERE id = :songId")
+    suspend fun updateLastPlayed(songId: Int, timestamp: Long)
 }

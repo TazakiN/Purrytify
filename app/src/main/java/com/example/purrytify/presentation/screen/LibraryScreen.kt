@@ -5,6 +5,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.Toast
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,7 +43,8 @@ fun LibraryScreen(
         factory = { ctx ->
             val view = LayoutInflater.from(ctx).inflate(R.layout.activity_library, null, false)
             val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
-            val addButton = view.findViewById<Button>(R.id.btnAddSong)
+            val addButton = view.findViewById<ImageButton>(R.id.btnAddSong)
+
 
             val btnAll = view.findViewById<Button>(R.id.btnAllSongs)
             val btnLiked = view.findViewById<Button>(R.id.btnLikedSongs)
@@ -59,6 +61,9 @@ fun LibraryScreen(
                         afd.close()
                         mediaPlayer.prepare()
                         mediaPlayer.start()
+
+                        viewModel.updateLastPlayed(song.id)
+
                         Toast.makeText(ctx, "Memutar: ${song.title}", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(ctx, "Gagal membuka file audio", Toast.LENGTH_SHORT).show()

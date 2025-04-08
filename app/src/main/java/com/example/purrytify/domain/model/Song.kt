@@ -8,5 +8,7 @@ data class Song(
     val songUri: String,
     val duration: Long,
     val isLiked: Boolean = false,
-    val username: String
+    val username: String,
+    val lastPlayed: Long? = null,
+    val createdAt: Long = System.currentTimeMillis()
 )

@@ -11,7 +11,9 @@ fun SongEntity.toDomain(): Song = Song(
     songUri = songUri,
     duration = duration,
     isLiked = isLiked,
-    username = username
+    username = username,
+    lastPlayed = lastPlayed,
+    createdAt = createdAt
 )
 
 fun Song.toEntity(): SongEntity = SongEntity(
@@ -22,5 +24,7 @@ fun Song.toEntity(): SongEntity = SongEntity(
     songUri = songUri,
     duration = duration,
     isLiked = isLiked,
-    username = username
+    username = username,
+    lastPlayed = lastPlayed,
+    createdAt = createdAt
 )

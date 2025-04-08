@@ -20,7 +20,7 @@ class SongRepositoryImpl @Inject constructor(
             ?: throw IllegalStateException("User not logged in")
 
     override suspend fun insertSong(song: Song) {
-        dao.insertSong(song.copy(username = username, isLiked = true).toEntity())
+        dao.insertSong(song.copy(username = username).toEntity())
     }
 
     override suspend fun updateSong(song: Song) {
@@ -37,5 +37,17 @@ class SongRepositoryImpl @Inject constructor(
 
     override fun getLikedSongs(): Flow<List<Song>> {
         return dao.getLikedSongs(username).map { list -> list.map { it.toDomain() } }
+    }
+
+    override fun getNewSongs(): Flow<List<Song>> {
+        return dao.getNewSongs(username).map { list -> list.map { it.toDomain() } }
+    }
+
+    override fun getRecentlyPlayed(): Flow<List<Song>> {
+        return dao.getRecentlyPlayed(username).map { list -> list.map { it.toDomain() } }
+    }
+
+    override suspend fun updateLastPlayed(songId: Int, timestamp: Long) {
+        dao.updateLastPlayed(songId, timestamp)
     }
 }

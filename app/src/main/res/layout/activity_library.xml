@@ -2,47 +2,57 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-    <!-- Tombol Add Song -->
-    <Button
+    <!-- Judul "Your Library" -->
+    <TextView
+            android:id="@+id/textLibraryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Library"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Tombol Add (+) -->
+    <ImageButton
             android:id="@+id/btnAddSong"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add Song"
-            android:layout_margin="16dp"
+            android:src="@android:drawable/ic_input_add"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Add Song"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Container Tombol Filter -->
+    <!-- Tombol Filter (All & Liked) -->
     <LinearLayout
             android:id="@+id/tabsContainer"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center"
-            android:padding="8dp"
-            app:layout_constraintTop_toBottomOf="@id/btnAddSong"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:gravity="start"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/textLibraryTitle"
+            app:layout_constraintStart_toStartOf="parent">
 
         <Button
                 android:id="@+id/btnAllSongs"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All Songs" />
+                android:text="All"
+                android:layout_marginEnd="8dp" />
 
         <Button
                 android:id="@+id/btnLikedSongs"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Liked Songs" />
+                android:text="Liked" />
     </LinearLayout>
 
-    <!-- Daftar Lagu -->
+    <!-- RecyclerView untuk daftar lagu -->
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewSongs"
             android:layout_width="0dp"
