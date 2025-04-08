@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <Button
+            android:id="@+id/btnChooseSong"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pilih Lagu" />
+
+    <TextView
+            android:id="@+id/txtSelectedFileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="File: -"
+            android:paddingTop="4dp"/>
+
+    <EditText
+            android:id="@+id/inputTitle"
+            android:hint="Judul Lagu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+
+    <EditText
+            android:id="@+id/inputArtist"
+            android:hint="Nama Artis"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+
+    <Button
+            android:id="@+id/btnChooseArtwork"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pilih Gambar Sampul" />
+
+    <ImageView
+            android:id="@+id/imgArtworkPreview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_artwork_placeholder" />
+
+    <TextView
+            android:id="@+id/txtDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Durasi: -" />
+
+    <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Simpan" />
+</LinearLayout>

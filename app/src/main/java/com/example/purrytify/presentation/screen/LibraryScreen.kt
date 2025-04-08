@@ -1,8 +1,11 @@
 package com.example.purrytify.presentation.screen
 
+import android.media.MediaPlayer
+import android.net.Uri
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -12,8 +15,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.purrytify.R
-import com.example.purrytify.domain.model.Song
 import com.example.purrytify.presentation.adapter.SongAdapter
+import com.example.purrytify.presentation.fragments.DialogAddSong
 import com.example.purrytify.presentation.viewmodel.LibraryViewModel
 
 @Composable
@@ -30,21 +33,38 @@ fun LibraryScreen(
             val addButton = view.findViewById<Button>(R.id.btnAddSong)
 
             recyclerView.layoutManager = LinearLayoutManager(ctx)
-            val adapter = SongAdapter(songs)
+
+            val adapter = SongAdapter(songs) { song ->
+                try {
+                    val uri = Uri.parse(song.songUri)
+
+                    // Coba buka file lewat content resolver
+                    val afd = ctx.contentResolver.openAssetFileDescriptor(uri, "r")
+                    if (afd != null) {
+                        val mediaPlayer = MediaPlayer()
+                        mediaPlayer.setDataSource(afd.fileDescriptor)
+                        afd.close()
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                        Toast.makeText(ctx, "Memutar: ${song.title}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(ctx, "Gagal membuka file audio", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: SecurityException) {
+                    Toast.makeText(ctx, "Akses ditolak: Gunakan OpenDocument!", Toast.LENGTH_LONG).show()
+                    e.printStackTrace()
+                } catch (e: Exception) {
+                    Toast.makeText(ctx, "Gagal memutar lagu: ${e.message}", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+            }
+
             recyclerView.adapter = adapter
 
             addButton.setOnClickListener {
-                val dummySong = Song(
-                    title = "Judul Lagu Baru",
-                    artist = "Artist Baru",
-                    artworkUri = null,
-                    songUri = "file:///android_asset/sample.mp3",
-                    duration = 200_000L,
-                    isLiked = false,
-                    username = "test"
-                )
-                viewModel.addSong(dummySong)
-                Toast.makeText(ctx, "Lagu ditambahkan!", Toast.LENGTH_SHORT).show()
+                (ctx as? AppCompatActivity)?.let {
+                    DialogAddSong().show(it.supportFragmentManager, "AddSongDialog")
+                }
             }
 
             view
