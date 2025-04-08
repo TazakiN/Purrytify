@@ -20,7 +20,7 @@ class SongRepositoryImpl @Inject constructor(
             ?: throw IllegalStateException("User not logged in")
 
     override suspend fun insertSong(song: Song) {
-        dao.insertSong(song.copy(username = username).toEntity())
+        dao.insertSong(song.copy(username = username, isLiked = true).toEntity())
     }
 
     override suspend fun updateSong(song: Song) {

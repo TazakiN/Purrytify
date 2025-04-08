@@ -8,7 +8,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,7 +27,16 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val songs by viewModel.allSongs.collectAsState()
+    val allSongs by viewModel.allSongs.collectAsState()
+
+    // Filter mode state
+    var showLikedOnly by remember { mutableStateOf(false) }
+
+    val filteredSongs = if (showLikedOnly) {
+        allSongs.filter { it.isLiked }
+    } else {
+        allSongs
+    }
 
     AndroidView(
         factory = { ctx ->
@@ -32,13 +44,14 @@ fun LibraryScreen(
             val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
             val addButton = view.findViewById<Button>(R.id.btnAddSong)
 
+            val btnAll = view.findViewById<Button>(R.id.btnAllSongs)
+            val btnLiked = view.findViewById<Button>(R.id.btnLikedSongs)
+
             recyclerView.layoutManager = LinearLayoutManager(ctx)
 
-            val adapter = SongAdapter(songs) { song ->
+            val adapter = SongAdapter(filteredSongs) { song ->
                 try {
                     val uri = Uri.parse(song.songUri)
-
-                    // Coba buka file lewat content resolver
                     val afd = ctx.contentResolver.openAssetFileDescriptor(uri, "r")
                     if (afd != null) {
                         val mediaPlayer = MediaPlayer()
@@ -50,9 +63,6 @@ fun LibraryScreen(
                     } else {
                         Toast.makeText(ctx, "Gagal membuka file audio", Toast.LENGTH_SHORT).show()
                     }
-                } catch (e: SecurityException) {
-                    Toast.makeText(ctx, "Akses ditolak: Gunakan OpenDocument!", Toast.LENGTH_LONG).show()
-                    e.printStackTrace()
                 } catch (e: Exception) {
                     Toast.makeText(ctx, "Gagal memutar lagu: ${e.message}", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
@@ -60,6 +70,16 @@ fun LibraryScreen(
             }
 
             recyclerView.adapter = adapter
+
+            btnAll.setOnClickListener {
+                showLikedOnly = false
+                adapter.updateSongs(allSongs)
+            }
+
+            btnLiked.setOnClickListener {
+                showLikedOnly = true
+                adapter.updateSongs(allSongs.filter { it.isLiked })
+            }
 
             addButton.setOnClickListener {
                 (ctx as? AppCompatActivity)?.let {
@@ -72,7 +92,7 @@ fun LibraryScreen(
         update = { view ->
             val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerViewSongs)
             val adapter = recyclerView.adapter as? SongAdapter
-            adapter?.updateSongs(songs)
+            adapter?.updateSongs(filteredSongs)
         }
     )
 }
