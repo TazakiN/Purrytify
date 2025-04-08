@@ -1,7 +1,5 @@
 package com.example.purrytify.presentation.screen
 
-import android.media.MediaPlayer
-import android.net.Uri
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -17,11 +15,13 @@ import com.example.purrytify.presentation.adapter.SongAdapter
 import com.example.purrytify.presentation.adapter.SongVerticalAdapter
 import com.example.purrytify.presentation.viewmodel.HomeScreenViewModel
 import com.example.purrytify.presentation.viewmodel.LibraryViewModel
+import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 
 @Composable
 fun HomeScreen(
     viewModel: HomeScreenViewModel = hiltViewModel(),
-    libraryViewModel: LibraryViewModel = hiltViewModel()
+    libraryViewModel: LibraryViewModel = hiltViewModel(),
+    musicPlayerViewModel: MusicPlayerViewModel
 ) {
     val context = LocalContext.current
     val recentlyPlayed by viewModel.recentlyPlayed.collectAsState()
@@ -39,34 +39,24 @@ fun HomeScreen(
 
             val playSong: (song: com.example.purrytify.domain.model.Song) -> Unit = { song ->
                 try {
-                    val uri = Uri.parse(song.songUri)
-                    val afd = ctx.contentResolver.openAssetFileDescriptor(uri, "r")
-                    if (afd != null) {
-                        val mediaPlayer = MediaPlayer()
-                        mediaPlayer.setDataSource(afd.fileDescriptor)
-                        afd.close()
-                        mediaPlayer.prepare()
-                        mediaPlayer.start()
-                        Toast.makeText(ctx, "Memutar: ${song.title}", Toast.LENGTH_SHORT).show()
-
-                        libraryViewModel.updateLastPlayed(song.id)
-                    } else {
-                        Toast.makeText(ctx, "Gagal membuka file audio", Toast.LENGTH_SHORT).show()
-                    }
+                    // Use MusicPlayerViewModel instead of creating a new MediaPlayer
+                    musicPlayerViewModel.playSong(song)
+                    Toast.makeText(ctx, "Playing: ${song.title}", Toast.LENGTH_SHORT).show()
+                    libraryViewModel.updateLastPlayed(song.id)
                 } catch (e: Exception) {
-                    Toast.makeText(ctx, "Gagal memutar lagu: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(ctx, "Failed to play song: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
                     e.printStackTrace()
                 }
             }
 
-            // Simpan adapter ke dalam tag untuk akses nanti
+            // Store adapters to tags for later access in update
             val adapterRecently = SongAdapter(recentlyPlayed, playSong)
             val adapterNew = SongVerticalAdapter(newSongs, playSong)
 
             rvRecently.adapter = adapterRecently
             rvNew.adapter = adapterNew
 
-            // Simpan adapter dalam tag view untuk digunakan kembali di update
             rvRecently.setTag(R.id.recyclerViewRecentlyPlayed, adapterRecently)
             rvNew.setTag(R.id.recyclerViewNewSongs, adapterNew)
 

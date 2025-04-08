@@ -1,7 +1,5 @@
 package com.example.purrytify.presentation.screen
 
-import android.media.MediaPlayer
-import android.net.Uri
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.ImageButton
@@ -17,10 +15,12 @@ import com.example.purrytify.R
 import com.example.purrytify.presentation.adapter.SongAdapter
 import com.example.purrytify.presentation.fragments.DialogAddSong
 import com.example.purrytify.presentation.viewmodel.LibraryViewModel
+import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 
 @Composable
 fun LibraryScreen(
-    viewModel: LibraryViewModel = hiltViewModel()
+    viewModel: LibraryViewModel = hiltViewModel(),
+    musicPlayerViewModel: MusicPlayerViewModel
 ) {
     val context = LocalContext.current
     val allSongs by viewModel.allSongs.collectAsState()
@@ -46,23 +46,12 @@ fun LibraryScreen(
 
             val adapter = SongAdapter(filteredSongs) { song ->
                 try {
-                    val uri = Uri.parse(song.songUri)
-                    val afd = ctx.contentResolver.openAssetFileDescriptor(uri, "r")
-                    if (afd != null) {
-                        val mediaPlayer = MediaPlayer()
-                        mediaPlayer.setDataSource(afd.fileDescriptor)
-                        afd.close()
-                        mediaPlayer.prepare()
-                        mediaPlayer.start()
-
-                        viewModel.updateLastPlayed(song.id)
-
-                        Toast.makeText(ctx, "Memutar: ${song.title}", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(ctx, "Gagal membuka file audio", Toast.LENGTH_SHORT).show()
-                    }
+                    // Use MusicPlayerViewModel instead of creating a new MediaPlayer
+                    musicPlayerViewModel.playSong(song)
+                    Toast.makeText(ctx, "Playing: ${song.title}", Toast.LENGTH_SHORT).show()
+                    viewModel.updateLastPlayed(song.id)
                 } catch (e: Exception) {
-                    Toast.makeText(ctx, "Gagal memutar lagu: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(ctx, "Failed to play song: ${e.message}", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
                 }
             }

@@ -101,6 +101,9 @@ dependencies {
     //    Glide
     implementation(libs.glide)
     kapt(libs.glide.compiler)
+
+    // Coil for Compose
+    implementation(libs.coil.compose)
 }
 
 // Allow references to generated code
