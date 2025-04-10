@@ -1,0 +1,48 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/homeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="16dp"
+        android:paddingTop="32dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
+        android:background="#121212">
+
+    <TextView
+            android:id="@+id/textNewSongs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New songs"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:paddingBottom="8dp"
+            android:textColor="@color/white" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewNewSongs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="100dp"
+            android:layout_marginBottom="16dp"
+            android:overScrollMode="never" />
+
+    <TextView
+            android:id="@+id/textRecentlyPlayed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recently played"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:paddingBottom="8dp"
+            android:textColor="@color/white"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewRecentlyPlayed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="200dp"
+            android:overScrollMode="never" />
+</LinearLayout>

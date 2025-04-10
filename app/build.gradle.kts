@@ -38,6 +38,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
@@ -51,6 +52,10 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.material)
+
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
 //    implementation(libs.androidx.hilt.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -78,7 +83,26 @@ dependencies {
 
     implementation(libs.androidx.material.icons.extended)
 
-    // coil
+    // RecyclerView
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.cardview)
+
+    // Kotlin Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // Room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
+
+    implementation(libs.androidx.fragment.ktx)
+
+    //    Glide
+    implementation(libs.glide)
+    kapt(libs.glide.compiler)
+
+    // Coil for Compose
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 }
