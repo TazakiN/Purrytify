@@ -1,9 +1,12 @@
 package com.example.purrytify.presentation.fragments
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +21,8 @@ import com.example.purrytify.presentation.viewmodel.LibraryViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class DialogAddSong : BottomSheetDialogFragment() {
 
@@ -55,6 +60,22 @@ class DialogAddSong : BottomSheetDialogFragment() {
                     binding.inputTitle.setText(title ?: "")
                     binding.inputArtist.setText(artist ?: "")
 
+                    // Extract embedded album art
+                    val artBytes = mmr.embeddedPicture
+                    if (artBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
+                        binding.imgArtworkPreview.setImageBitmap(bitmap)
+                        binding.txtArtworkLabel.text = "Embedded Cover Art"
+
+                        // Save to internal storage as file://
+                        val savedUri = saveBitmapToInternalStorage(bitmap, title ?: "artwork_${System.currentTimeMillis()}")
+                        selectedArtworkUri = savedUri
+                    } else {
+                        binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
+                        binding.txtArtworkLabel.text = "No Artwork"
+                        selectedArtworkUri = null
+                    }
+
                     mmr.release()
                 } catch (e: Exception) {
                     Toast.makeText(context, "Gagal membaca metadata lagu", Toast.LENGTH_SHORT).show()
@@ -72,7 +93,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
             )
             selectedArtworkUri = it
             binding.imgArtworkPreview.setImageURI(it)
-            binding.txtArtworkLabel.text = "Photo Selected" // ✅ Update label di sini
+            binding.txtArtworkLabel.text = "Photo Selected"
         }
     }
 
@@ -104,6 +125,8 @@ class DialogAddSong : BottomSheetDialogFragment() {
             val artist = binding.inputArtist.text.toString().trim()
             val uri = songUri?.toString()
             val artwork = selectedArtworkUri?.toString()
+
+            Log.d("ArtworkURI", "Saved artwork URI: $artwork")
 
             if (title.isNotEmpty() && artist.isNotEmpty() && uri != null && duration > 0) {
                 viewModel.addSong(
@@ -138,6 +161,21 @@ class DialogAddSong : BottomSheetDialogFragment() {
             }
         }
         return result ?: uri.lastPathSegment ?: "Unknown"
+    }
+
+    private fun saveBitmapToInternalStorage(bitmap: Bitmap, fileName: String): Uri? {
+        return try {
+            val context = requireContext()
+            val file = File(context.filesDir, "$fileName.jpg")
+            val out = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            out.flush()
+            out.close()
+            Uri.fromFile(file) // Use file:// URI
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     override fun onDestroyView() {
