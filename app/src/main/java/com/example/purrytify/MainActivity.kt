@@ -1,6 +1,8 @@
 package com.example.purrytify
 
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -10,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -18,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -37,6 +42,10 @@ import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
+import com.example.purrytify.presentation.viewmodel.NetworkViewModel
+import com.example.purrytify.presentation.viewmodel.SplashViewModel
+import com.example.purrytify.presentation.viewmodel.StartupLoginState
+import com.example.purrytify.domain.model.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -53,6 +62,8 @@ class MainActivity : AppCompatActivity() {
 
     private val splashViewModel by viewModels<SplashViewModel>()
     private val musicPlayerViewModel by viewModels<MusicPlayerViewModel>()
+    private val viewModel by viewModels<SplashViewModel>()
+    private val networkViewModel by viewModels<NetworkViewModel>()
 
     @Inject
     lateinit var tokenRefreshService: TokenRefreshService
@@ -70,10 +81,14 @@ class MainActivity : AppCompatActivity() {
         setContent {
             PurrytifyTheme {
                 navController = rememberNavController()
+
                 val isReady by splashViewModel.isReady.collectAsStateWithLifecycle()
                 val startupLoginState by splashViewModel.startupLoginState.collectAsStateWithLifecycle(initialValue = StartupLoginState.Loading)
                 val showFullPlayer by musicPlayerViewModel.showFullPlayer.collectAsStateWithLifecycle()
                 val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
+                val isReady by viewModel.isReady.collectAsStateWithLifecycle()
+                val startupLoginState by viewModel.startupLoginState.collectAsStateWithLifecycle(initialValue = StartupLoginState.Loading)
+                val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
 
                 LaunchedEffect(isReady) {
                     if (isReady) {
@@ -100,6 +115,17 @@ class MainActivity : AppCompatActivity() {
                 LaunchedEffect(showFullPlayer) {
                     if (showFullPlayer && currentSong != null) {
                         navController.navigate(Screen.Player.route)
+
+                // Show Toast on network status change
+                LaunchedEffect(networkStatus) {
+                    if (networkStatus != NetworkStatus.Available) {
+                        val message = when (networkStatus) {
+                            NetworkStatus.Unavailable -> "Tidak ada koneksi internet."
+                            NetworkStatus.Lost -> "Koneksi internet terputus."
+                            NetworkStatus.Losing -> "Koneksi internet tidak stabil."
+                            else -> "Unknown network error."
+                        }
+                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
                     }
                 }
 
