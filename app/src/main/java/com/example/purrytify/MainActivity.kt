@@ -6,19 +6,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -91,7 +90,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                             StartupLoginState.Loading -> {
-                                // TODO: Handle loading state
+                                // Handle loading state
                             }
                         }
                     }
@@ -112,17 +111,10 @@ class MainActivity : AppCompatActivity() {
 
                 Scaffold(
                     bottomBar = {
-                        Box {
-                            if (showBottomBar) {
-                                BottomAppBar {
-                                    BottomNavigationBar(navController = navController, items = bottomNavItems)
-                                }
-                            }
-
-                            if (showMiniPlayer) {
-                                Box(
-                                    modifier = Modifier.align(Alignment.TopCenter)
-                                ) {
+                        if (showBottomBar) {
+                            Column {
+                                // Mini player positioned just above the navigation bar
+                                if (showMiniPlayer) {
                                     MiniPlayer(
                                         viewModel = musicPlayerViewModel,
                                         onPlayerClick = {
@@ -130,54 +122,66 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     )
                                 }
+
+                                // Navigation bar
+                                BottomNavigationBar(
+                                    navController = navController,
+                                    items = bottomNavItems
+                                )
                             }
                         }
                     }
                 ) { innerPadding ->
-                    Surface(
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
+                    // Main content area
+                    Box(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        NavHost(
-                            navController = navController,
-                            startDestination = if (startupLoginState == StartupLoginState.LoggedIn && isReady) Screen.Home.route else Screen.Login.route
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            color = MaterialTheme.colorScheme.background
                         ) {
-                            composable(Screen.Login.route) {
-                                LoginScreen(onLoginSuccess = {
-                                    tokenRefreshService.start()
-                                    navController.navigate(Screen.Home.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
-                                    }
-                                })
-                            }
-                            composable(Screen.Home.route) {
-                                HomeScreen(
-                                    musicPlayerViewModel = musicPlayerViewModel
-                                )
-                            }
-                            composable(Screen.Library.route) {
-                                LibraryScreen(
-                                    musicPlayerViewModel = musicPlayerViewModel
-                                )
-                            }
-                            composable(Screen.Profile.route) {
-                                ProfileScreen(onLogoutSuccess = {
-                                    tokenRefreshService.stop()
-                                    navController.navigate(Screen.Login.route) {
-                                        popUpTo(Screen.Home.route) { inclusive = true }
-                                    }
-                                })
-                            }
-                            composable(Screen.Player.route) {
-                                MusicPlayerScreen(
-                                    onBackPressed = {
-                                        musicPlayerViewModel.togglePlayerView()
-                                        navController.popBackStack()
-                                    },
-                                    viewModel = musicPlayerViewModel
-                                )
+                            NavHost(
+                                navController = navController,
+                                startDestination = if (startupLoginState == StartupLoginState.LoggedIn && isReady)
+                                    Screen.Home.route else Screen.Login.route
+                            ) {
+                                composable(Screen.Login.route) {
+                                    LoginScreen(onLoginSuccess = {
+                                        tokenRefreshService.start()
+                                        navController.navigate(Screen.Home.route) {
+                                            popUpTo(Screen.Login.route) { inclusive = true }
+                                        }
+                                    })
+                                }
+                                composable(Screen.Home.route) {
+                                    HomeScreen(
+                                        musicPlayerViewModel = musicPlayerViewModel
+                                    )
+                                }
+                                composable(Screen.Library.route) {
+                                    LibraryScreen(
+                                        musicPlayerViewModel = musicPlayerViewModel
+                                    )
+                                }
+                                composable(Screen.Profile.route) {
+                                    ProfileScreen(onLogoutSuccess = {
+                                        tokenRefreshService.stop()
+                                        navController.navigate(Screen.Login.route) {
+                                            popUpTo(Screen.Home.route) { inclusive = true }
+                                        }
+                                    })
+                                }
+                                composable(Screen.Player.route) {
+                                    MusicPlayerScreen(
+                                        onBackPressed = {
+                                            musicPlayerViewModel.togglePlayerView()
+                                            navController.popBackStack()
+                                        },
+                                        viewModel = musicPlayerViewModel
+                                    )
+                                }
                             }
                         }
                     }

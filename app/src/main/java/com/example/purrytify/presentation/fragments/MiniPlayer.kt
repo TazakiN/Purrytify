@@ -2,6 +2,7 @@ package com.example.purrytify.presentation.fragments
 
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,12 +41,12 @@ fun MiniPlayer(
 
     if (currentSong == null) return // Don't show mini player if no song is playing
 
-    Surface(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .clickable { onPlayerClick() },
-        color = DarkGray
+            .background(color = Color(0xFF7B1FA2)) // Purple color matching Figma
+            .clickable { onPlayerClick() }
     ) {
         Row(
             modifier = Modifier
@@ -53,7 +54,7 @@ fun MiniPlayer(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Cover art
+            // Album artwork
             Box(
                 modifier = Modifier
                     .size(40.dp)
@@ -97,7 +98,7 @@ fun MiniPlayer(
 
                 Text(
                     text = currentSong?.artist ?: "",
-                    color = Color.LightGray,
+                    color = Color.White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -107,13 +108,13 @@ fun MiniPlayer(
             // Play/Pause button
             IconButton(
                 onClick = { viewModel.togglePlayPause() },
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = if (isPlaying) "Pause" else "Play",
                     tint = Color.White,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
