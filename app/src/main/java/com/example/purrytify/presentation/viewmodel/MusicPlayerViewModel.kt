@@ -15,6 +15,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,6 +35,9 @@ class MusicPlayerViewModel @Inject constructor(
     private val _currentSong = MutableStateFlow<Song?>(null)
     val currentSong: StateFlow<Song?> = _currentSong
 
+    // StateFlow for all songs in order
+    private val _allSongs = MutableStateFlow<List<Song>>(emptyList())
+
     // StateFlow for player state
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
@@ -49,9 +54,14 @@ class MusicPlayerViewModel @Inject constructor(
     private val _showFullPlayer = MutableStateFlow(false)
     val showFullPlayer: StateFlow<Boolean> = _showFullPlayer
 
-    // StateFlow for showing options dialog
-    private val _showOptionsDialog = MutableStateFlow(false)
-    val showOptionsDialog: StateFlow<Boolean> = _showOptionsDialog
+    init {
+        // Load all songs to have an ordered list for next/previous functionality
+        viewModelScope.launch {
+            songRepository.getAllSongs().collectLatest { songs ->
+                _allSongs.value = songs
+            }
+        }
+    }
 
     fun playSong(song: Song) {
         try {
@@ -130,28 +140,33 @@ class MusicPlayerViewModel @Inject constructor(
         _showFullPlayer.value = !_showFullPlayer.value
     }
 
-    fun toggleOptionsDialog() {
-        _showOptionsDialog.value = !_showOptionsDialog.value
+    fun playNextSong() {
+        val currentSong = _currentSong.value ?: return
+        val currentSongIndex = _allSongs.value.indexOfFirst { it.id == currentSong.id }
+
+        if (currentSongIndex != -1 && currentSongIndex < _allSongs.value.size - 1) {
+            // There is a next song, play it
+            val nextSong = _allSongs.value[currentSongIndex + 1]
+            playSong(nextSong)
+        } else if (currentSongIndex != -1 && _allSongs.value.isNotEmpty()) {
+            // We're at the end, loop back to the first song
+            val firstSong = _allSongs.value[0]
+            playSong(firstSong)
+        }
     }
 
-    fun deleteSong(song: Song) {
-        viewModelScope.launch {
-            try {
-                // If this is the currently playing song, stop playback first
-                if (_currentSong.value?.id == song.id) {
-                    releaseMediaPlayer()
-                    _currentSong.value = null
-                }
+    fun playPreviousSong() {
+        val currentSong = _currentSong.value ?: return
+        val currentSongIndex = _allSongs.value.indexOfFirst { it.id == currentSong.id }
 
-                // Delete the song from the repository
-                songRepository.deleteSong(song)
-
-                // Close dialog after deletion
-                _showOptionsDialog.value = false
-            } catch (e: Exception) {
-                e.printStackTrace()
-                // Handle error
-            }
+        if (currentSongIndex > 0) {
+            // There is a previous song, play it
+            val previousSong = _allSongs.value[currentSongIndex - 1]
+            playSong(previousSong)
+        } else if (_allSongs.value.isNotEmpty()) {
+            // We're at the beginning, loop back to the last song
+            val lastSong = _allSongs.value.last()
+            playSong(lastSong)
         }
     }
 

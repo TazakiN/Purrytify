@@ -1,7 +1,6 @@
 package com.example.purrytify.presentation.screen
 
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,9 +24,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.purrytify.R
-import com.example.purrytify.domain.model.Song
-import com.example.purrytify.presentation.fragments.DialogUpdateSong
-import com.example.purrytify.presentation.fragments.SongOptionsDialog
 import com.example.purrytify.presentation.theme.Black
 import com.example.purrytify.presentation.theme.Green
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
@@ -41,7 +37,6 @@ fun MusicPlayerScreen(
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val totalDuration by viewModel.totalDuration.collectAsState()
-    val showOptionsDialog by viewModel.showOptionsDialog.collectAsState()
     val context = LocalContext.current
 
     if (currentSong == null) {
@@ -57,26 +52,6 @@ fun MusicPlayerScreen(
             )
         }
         return
-    }
-
-    // Show options dialog when the state is true
-    if (showOptionsDialog && currentSong != null) {
-        SongOptionsDialog(
-            song = currentSong!!,
-            onDismiss = { viewModel.toggleOptionsDialog() },
-            onEditClick = { song ->
-                viewModel.toggleOptionsDialog() // Close dialog
-
-                // Show edit dialog
-                (context as? AppCompatActivity)?.let {
-                    DialogUpdateSong(song).show(it.supportFragmentManager, "UpdateSongDialog")
-                }
-            },
-            onDeleteClick = { song ->
-                viewModel.deleteSong(song)
-                onBackPressed() // Go back after deleting
-            }
-        )
     }
 
     Box(
@@ -110,7 +85,7 @@ fun MusicPlayerScreen(
                     color = Color.White
                 )
 
-                IconButton(onClick = { viewModel.toggleOptionsDialog() }) {
+                IconButton(onClick = { /* Show options menu */ }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Options",
@@ -230,7 +205,7 @@ fun MusicPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { /* Skip to previous song */ },
+                    onClick = { viewModel.playPreviousSong() },
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
@@ -258,7 +233,7 @@ fun MusicPlayerScreen(
                 }
 
                 IconButton(
-                    onClick = { /* Skip to next song */ },
+                    onClick = { viewModel.playNextSong() },
                     modifier = Modifier.size(48.dp)
                 ) {
                     Icon(
