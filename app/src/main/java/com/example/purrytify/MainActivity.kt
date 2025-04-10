@@ -1,6 +1,7 @@
 package com.example.purrytify
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +25,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.purrytify.data.service.TokenRefreshService
 import com.example.purrytify.presentation.fragments.BottomNavigationBar
-import com.example.purrytify.presentation.fragments.NetworkStatusSnackbarHost
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LibraryScreen
 import com.example.purrytify.presentation.screen.LoginScreen
@@ -71,8 +70,6 @@ class MainActivity : ComponentActivity() {
                 val startupLoginState by viewModel.startupLoginState.collectAsStateWithLifecycle(initialValue = StartupLoginState.Loading)
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
 
-                val snackbarHostState = remember { SnackbarHostState() }
-
                 LaunchedEffect(isReady) {
                     if (isReady) {
                         when (startupLoginState) {
@@ -94,7 +91,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Show snackbar on network status change
+                // Show Toast on network status change
                 LaunchedEffect(networkStatus) {
                     if (networkStatus != NetworkStatus.Available) {
                         val message = when (networkStatus) {
@@ -103,7 +100,7 @@ class MainActivity : ComponentActivity() {
                             NetworkStatus.Losing -> "Koneksi internet tidak stabil."
                             else -> "Unknown network error."
                         }
-                        snackbarHostState.showSnackbar(message)
+                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -112,9 +109,6 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route
 
                 Scaffold(
-                    snackbarHost = {
-                        NetworkStatusSnackbarHost(hostState = snackbarHostState)
-                    },
                     bottomBar = {
                         if (currentRoute != Screen.Login.route) {
                             BottomAppBar {
