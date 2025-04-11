@@ -4,6 +4,8 @@ import com.example.purrytify.data.repository.AuthRepositoryImpl
 import com.example.purrytify.data.repository.SongRepositoryImpl
 import com.example.purrytify.domain.repository.AuthRepository
 import com.example.purrytify.domain.repository.SongRepository
+import com.example.purrytify.data.repository.UserRepositoryImpl
+import com.example.purrytify.domain.repository.UserRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -24,4 +26,10 @@ abstract class RepositoryModule {
     abstract fun bindSongRepository(
         songRepositoryImpl: SongRepositoryImpl
     ): SongRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindUserRepository(
+        userRepositoryImpl: UserRepositoryImpl
+    ): UserRepository
 }

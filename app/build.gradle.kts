@@ -104,6 +104,7 @@ dependencies {
 
     // Coil for Compose
     implementation(libs.coil.compose)
+//    implementation(libs.coil.network.okhttp)
 }
 
 // Allow references to generated code
