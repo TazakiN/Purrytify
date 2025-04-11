@@ -17,15 +17,20 @@ class AuthRemoteDataSource @Inject constructor(
             } else {
                 val errorBody = response.errorBody()?.string()
                 val errorResponse = try {
-                    Gson().fromJson(errorBody, Map::class.java) as Map<String, String>
+                    Gson().fromJson(errorBody, Map::class.java) as Map<*, *>
                 } catch (e: Exception) {
                     null
                 }
-                val errorMessage = errorResponse?.get("error") ?: "Login failed with code: ${response.code()}"
-                Result.failure(Exception(errorMessage))
+                var errorMessage = errorResponse?.get("error") ?: "Login failed with code: ${response.code()}"
+
+                if (errorMessage.toString().equals("invalid input", ignoreCase = true)) {
+                    errorMessage = "Invalid credentials"
+                }
+
+                Result.failure(Exception(errorMessage.toString()))
             }
         } catch (e: Exception) {
-            throw Exception("Network error: ${e.message}")
+            throw Exception("Network error, please try again later")
         }
     }
 }
