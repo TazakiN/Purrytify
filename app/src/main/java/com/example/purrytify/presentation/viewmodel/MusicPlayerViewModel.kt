@@ -92,11 +92,9 @@ class MusicPlayerViewModel @Inject constructor(
                     // Start progress tracking
                     startProgressTracking()
 
-                    // Set completion listener
+                    // Next song otomatis (autoplay)
                     setOnCompletionListener {
-                        _isPlaying.value = false
-                        _currentPosition.value = 0
-                        stopProgressTracking()
+                        playNextSong()
                     }
 
                     // Update last played timestamp in the database
