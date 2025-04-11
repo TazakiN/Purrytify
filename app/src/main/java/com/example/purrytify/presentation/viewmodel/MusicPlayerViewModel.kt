@@ -54,6 +54,10 @@ class MusicPlayerViewModel @Inject constructor(
     private val _showFullPlayer = MutableStateFlow(false)
     val showFullPlayer: StateFlow<Boolean> = _showFullPlayer
 
+    // StateFlow for showing options dialog (titik tiga yg di atas)
+    private val _showOptionsDialog = MutableStateFlow(false)
+    val showOptionsDialog: StateFlow<Boolean> = _showOptionsDialog
+
     init {
         // Load all songs to have an ordered list for next/previous functionality
         viewModelScope.launch {
@@ -138,6 +142,31 @@ class MusicPlayerViewModel @Inject constructor(
 
     fun togglePlayerView() {
         _showFullPlayer.value = !_showFullPlayer.value
+    }
+
+    fun toggleOptionsDialog() {
+        _showOptionsDialog.value = !_showOptionsDialog.value
+    }
+
+    fun deleteSong(song: Song) {
+        viewModelScope.launch {
+            try {
+                // If this is the currently playing song, stop playback first
+                if (_currentSong.value?.id == song.id) {
+                    releaseMediaPlayer()
+                    _currentSong.value = null
+                }
+
+                // Delete the song from the repository
+                songRepository.deleteSong(song)
+
+                // Close dialog after deletion
+                _showOptionsDialog.value = false
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Handle error
+            }
+        }
     }
 
     fun playNextSong() {
