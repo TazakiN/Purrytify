@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -35,10 +36,12 @@ import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
 import com.example.purrytify.presentation.viewmodel.NetworkViewModel
 import com.example.purrytify.domain.model.NetworkStatus
+import com.example.purrytify.presentation.screen.LoadingIndicatorScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 sealed class Screen(val route: String, val title: String, val icon: Int) {
+    data object Splash : Screen("splash", "Splash", 0)
     data object Login : Screen("login", "Login", R.drawable.ic_login)
     data object Home : Screen("home", "Home", R.drawable.ic_home)
     data object Library : Screen("library", "Your Library", R.drawable.ic_library)
@@ -89,12 +92,12 @@ class MainActivity : AppCompatActivity() {
                             StartupLoginState.LoggedIn -> {
                                 tokenRefreshService.start()
                                 navController.navigate(Screen.Home.route) {
-                                    popUpTo(0) { inclusive = true }
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
                                 }
                             }
                             StartupLoginState.LoggedOut -> {
                                 navController.navigate(Screen.Login.route) {
-                                    popUpTo(0) { inclusive = true }
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
                                 }
                             }
                             else -> {} // loading state
@@ -150,8 +153,11 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         NavHost(
                             navController = navController,
-                            startDestination = Screen.Login.route
+                            startDestination = Screen.Splash.route
                         ) {
+                            composable(Screen.Splash.route) {
+                                LoadingIndicatorScreen(loadingText = "Loading...")
+                            }
                             composable(Screen.Login.route) {
                                 LoginScreen(
                                     onLoginSuccess = {
