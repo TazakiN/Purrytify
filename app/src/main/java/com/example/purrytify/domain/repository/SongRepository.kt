@@ -12,5 +12,4 @@ interface SongRepository {
     fun getNewSongs(): Flow<List<Song>>
     fun getRecentlyPlayed(): Flow<List<Song>>
     suspend fun updateLastPlayed(songId: Int, timestamp: Long)
-    suspend fun incrementPlayCount(songId: Int)
 }

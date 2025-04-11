@@ -36,9 +36,6 @@ interface SongDao {
     @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND isLiked = 1")
     fun getLikedSongsCount(userName: String): Flow<Int>
 
-    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND timesPlayed > 0")
-    fun getPlayedSongsCount(userName: String): Flow<Int>
-
-    @Query("UPDATE songs SET timesPlayed = timesPlayed + 1 WHERE id = :songId")
-    suspend fun incrementPlayCount(songId: Int)
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND lastPlayed IS NOT NULL")
+    fun getPlayedSongsCount(userName: String): Flow<Int>;
 }

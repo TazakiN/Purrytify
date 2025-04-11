@@ -76,8 +76,4 @@ class SongRepositoryImpl @Inject constructor(
     override suspend fun updateLastPlayed(songId: Int, timestamp: Long) {
         dao.updateLastPlayed(songId, timestamp)
     }
-
-    override suspend fun incrementPlayCount(songId: Int) {
-        dao.incrementPlayCount(songId)
-    }
 }
