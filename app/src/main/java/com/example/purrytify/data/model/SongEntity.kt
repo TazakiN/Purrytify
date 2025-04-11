@@ -14,5 +14,6 @@ data class SongEntity(
     val isLiked: Boolean = false,
     val username: String,
     val lastPlayed: Long? = null,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    var timesPlayed: Int = 0
 )

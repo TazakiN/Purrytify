@@ -29,4 +29,16 @@ interface SongDao {
 
     @Query("UPDATE songs SET lastPlayed = :timestamp WHERE id = :songId")
     suspend fun updateLastPlayed(songId: Int, timestamp: Long)
+
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName")
+    fun getAllSongsCount(userName: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND isLiked = 1")
+    fun getLikedSongsCount(userName: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND timesPlayed > 0")
+    fun getPlayedSongsCount(userName: String): Flow<Int>
+
+    @Query("UPDATE songs SET timesPlayed = timesPlayed + 1 WHERE id = :songId")
+    suspend fun incrementPlayCount(songId: Int)
 }

@@ -20,6 +20,18 @@ class SongRepositoryImpl @Inject constructor(
         return authRepository.getUsername()
     }
 
+    fun getAllSongsCount(): Flow<Int> {
+        return getCurrentUsername()?.let { dao.getAllSongsCount(it) } ?: emptyFlow()
+    }
+
+    fun getLikedSongsCount(): Flow<Int> {
+        return getCurrentUsername()?.let { dao.getLikedSongsCount(it) } ?: emptyFlow()
+    }
+
+    fun getPlayedSongsCount(): Flow<Int> {
+        return getCurrentUsername()?.let { dao.getPlayedSongsCount(it) } ?: emptyFlow()
+    }
+
     override suspend fun insertSong(song: Song) {
         val username = getCurrentUsername()
         if (username != null) {
@@ -63,5 +75,9 @@ class SongRepositoryImpl @Inject constructor(
 
     override suspend fun updateLastPlayed(songId: Int, timestamp: Long) {
         dao.updateLastPlayed(songId, timestamp)
+    }
+
+    override suspend fun incrementPlayCount(songId: Int) {
+        dao.incrementPlayCount(songId)
     }
 }
