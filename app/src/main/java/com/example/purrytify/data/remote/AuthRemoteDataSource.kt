@@ -2,7 +2,7 @@ package com.example.purrytify.data.remote
 
 import com.example.purrytify.data.model.LoginRequestDTO
 import com.example.purrytify.data.model.LoginResponseDTO
-import com.example.purrytify.data.model.RefreshTokenResponseDTO
+import com.google.gson.Gson
 import javax.inject.Inject
 
 class AuthRemoteDataSource @Inject constructor(
@@ -15,7 +15,14 @@ class AuthRemoteDataSource @Inject constructor(
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
-                throw Exception("Login failed with code: ${response.code()}")
+                val errorBody = response.errorBody()?.string()
+                val errorResponse = try {
+                    Gson().fromJson(errorBody, Map::class.java) as Map<String, String>
+                } catch (e: Exception) {
+                    null
+                }
+                val errorMessage = errorResponse?.get("error") ?: "Login failed with code: ${response.code()}"
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             throw Exception("Network error: ${e.message}")
