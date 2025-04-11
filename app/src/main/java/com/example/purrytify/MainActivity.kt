@@ -43,7 +43,7 @@ sealed class Screen(val route: String, val title: String, val icon: Int) {
     data object Home : Screen("home", "Home", R.drawable.ic_home)
     data object Library : Screen("library", "Your Library", R.drawable.ic_library)
     data object Profile : Screen("profile", "Profile", R.drawable.ic_profile)
-    data object Player : Screen("player", "Music Player", 0) // No icon for player as it's not in bottom nav
+    data object Player : Screen("player", "Music Player", 0)
 }
 
 @AndroidEntryPoint
@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
                                     popUpTo(0) { inclusive = true }
                                 }
                             }
-                            else -> {} // Loading: do nothing
+                            else -> {} // loading state
                         }
                     }
                 }
@@ -134,9 +134,10 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     )
                                 }
-                                BottomNavigationBar(navController = navController, items = listOf(
-                                    Screen.Home, Screen.Library, Screen.Profile
-                                ))
+                                BottomNavigationBar(
+                                    navController = navController,
+                                    items = listOf(Screen.Home, Screen.Library, Screen.Profile)
+                                )
                             }
                         }
                     }
@@ -162,35 +163,27 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                             composable(Screen.Home.route) {
-                                if (startupLoginState == StartupLoginState.LoggedIn) {
-                                    HomeScreen(musicPlayerViewModel = musicPlayerViewModel)
-                                }
+                                HomeScreen(musicPlayerViewModel = musicPlayerViewModel)
                             }
                             composable(Screen.Library.route) {
-                                if (startupLoginState == StartupLoginState.LoggedIn) {
-                                    LibraryScreen(musicPlayerViewModel = musicPlayerViewModel)
-                                }
+                                LibraryScreen(musicPlayerViewModel = musicPlayerViewModel)
                             }
                             composable(Screen.Profile.route) {
-                                if (startupLoginState == StartupLoginState.LoggedIn) {
-                                    ProfileScreen(onLogoutSuccess = {
-                                        tokenRefreshService.stop()
-                                        navController.navigate(Screen.Login.route) {
-                                            popUpTo(Screen.Home.route) { inclusive = true }
-                                        }
-                                    })
-                                }
+                                ProfileScreen(onLogoutSuccess = {
+                                    tokenRefreshService.stop()
+                                    navController.navigate(Screen.Login.route) {
+                                        popUpTo(Screen.Home.route) { inclusive = true }
+                                    }
+                                })
                             }
                             composable(Screen.Player.route) {
-                                if (startupLoginState == StartupLoginState.LoggedIn && currentSong != null) {
-                                    MusicPlayerScreen(
-                                        viewModel = musicPlayerViewModel,
-                                        onBackPressed = {
-                                            musicPlayerViewModel.togglePlayerView()
-                                            navController.popBackStack()
-                                        }
-                                    )
-                                }
+                                MusicPlayerScreen(
+                                    viewModel = musicPlayerViewModel,
+                                    onBackPressed = {
+                                        musicPlayerViewModel.togglePlayerView()
+                                        navController.popBackStack()
+                                    }
+                                )
                             }
                         }
                     }
