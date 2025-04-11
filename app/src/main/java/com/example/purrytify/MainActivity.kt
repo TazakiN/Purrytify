@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +14,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,20 +25,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.purrytify.data.service.TokenRefreshService
+import com.example.purrytify.domain.model.NetworkStatus
 import com.example.purrytify.presentation.fragments.BottomNavigationBar
 import com.example.purrytify.presentation.fragments.MiniPlayer
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LibraryScreen
+import com.example.purrytify.presentation.screen.LoadingIndicatorScreen
 import com.example.purrytify.presentation.screen.LoginScreen
 import com.example.purrytify.presentation.screen.MusicPlayerScreen
 import com.example.purrytify.presentation.screen.ProfileScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
+import com.example.purrytify.presentation.viewmodel.NetworkViewModel
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
-import com.example.purrytify.presentation.viewmodel.NetworkViewModel
-import com.example.purrytify.domain.model.NetworkStatus
-import com.example.purrytify.presentation.screen.LoadingIndicatorScreen
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -80,6 +82,8 @@ class MainActivity : AppCompatActivity() {
                 val showFullPlayer by musicPlayerViewModel.showFullPlayer.collectAsStateWithLifecycle()
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
 
+                var previousNetworkStatus by remember { mutableStateOf(NetworkStatus.Available) }
+
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 val showBottomBar = currentRoute != Screen.Login.route && currentRoute != Screen.Player.route
@@ -114,17 +118,21 @@ class MainActivity : AppCompatActivity() {
 
                 // Network status toast
                 LaunchedEffect(networkStatus) {
-                    if (networkStatus != NetworkStatus.Available) {
-                        val message = when (networkStatus) {
-                            NetworkStatus.Unavailable -> "Tidak ada koneksi internet."
-                            NetworkStatus.Lost -> "Koneksi internet terputus."
-                            NetworkStatus.Losing -> "Koneksi internet tidak stabil."
-                            else -> "Unknown network error."
+                    if (networkStatus != previousNetworkStatus) {
+                        if (networkStatus == NetworkStatus.Available && previousNetworkStatus != NetworkStatus.Available) {
+                            Toast.makeText(this@MainActivity, "Koneksi internet tersedia.", Toast.LENGTH_SHORT).show()
+                        } else if (networkStatus != NetworkStatus.Available) {
+                            val message = when (networkStatus) {
+                                NetworkStatus.Unavailable -> "Tidak ada koneksi internet."
+                                NetworkStatus.Lost -> "Koneksi internet terputus."
+                                NetworkStatus.Losing -> "Koneksi internet tidak stabil."
+                                else -> "Unknown network error."
+                            }
+                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
                         }
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                        previousNetworkStatus = networkStatus
                     }
                 }
-
                 Scaffold(
                     bottomBar = {
                         if (showBottomBar) {
