@@ -8,7 +8,7 @@
         android:paddingRight="16dp"
         android:paddingBottom="16dp">
 
-    <!-- Judul "Your Library" -->
+    <!-- Title -->
     <TextView
             android:id="@+id/textLibraryTitle"
             android:layout_width="wrap_content"
@@ -20,7 +20,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Tombol Add (+) -->
+    <!-- Add Button -->
     <ImageButton
             android:id="@+id/btnAddSong"
             android:layout_width="wrap_content"
@@ -32,7 +32,20 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Tombol Filter (All & Liked) -->
+    <!-- SearchView -->
+    <androidx.appcompat.widget.SearchView
+            android:id="@+id/searchView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:queryHint="Search by title or artist"
+            android:iconifiedByDefault="false"
+            android:background="@drawable/search_view_background"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/textLibraryTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Filter Tabs -->
     <LinearLayout
             android:id="@+id/tabsContainer"
             android:layout_width="wrap_content"
@@ -40,7 +53,7 @@
             android:orientation="horizontal"
             android:gravity="start"
             android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/textLibraryTitle"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
             app:layout_constraintStart_toStartOf="parent">
 
         <Button
@@ -63,7 +76,7 @@
                 android:textColor="@color/black" />
     </LinearLayout>
 
-    <!-- RecyclerView untuk daftar lagu -->
+    <!-- Song List -->
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewSongs"
             android:layout_width="0dp"
