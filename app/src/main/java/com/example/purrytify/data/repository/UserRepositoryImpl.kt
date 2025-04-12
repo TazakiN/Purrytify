@@ -25,7 +25,7 @@ class UserRepositoryImpl @Inject constructor(
                     username = profileResponse.username,
                     email = profileResponse.email,
                     location = profileResponse.location,
-                    profilePhoto = RetrofitClient.profilePictureUrlBuilder(profileResponse.profilePhoto),
+                    profilePhoto = sanitizeProfilePhoto(profileResponse.profilePhoto),
                     createdAt = profileResponse.createdAt,
                     updatedAt = profileResponse.updatedAt,
                     songsCount = songsCount,
@@ -39,5 +39,18 @@ class UserRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    private fun sanitizeProfilePhoto(photoPath: String?): String {
+        if (photoPath.isNullOrBlank()) return ""
+
+        // Remove "..", "/", "\", and allow only safe characters
+        val sanitizedPath = photoPath
+            .replace(Regex("""[.]{2,}"""), "")        // remove ".."
+            // temporary comment takutnya error karena dari server
+            // .replace(Regex("""[\\/]+"""), "")         // remove slashes
+            // .replace(Regex("""[^a-zA-Z0-9_.-]"""), "") // allow only safe characters
+
+        return RetrofitClient.profilePictureUrlBuilder(sanitizedPath)
     }
 }

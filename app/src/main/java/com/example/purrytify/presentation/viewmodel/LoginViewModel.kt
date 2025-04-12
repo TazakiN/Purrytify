@@ -23,6 +23,14 @@ class LoginViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading
 
     fun login(email: String, password: String) {
+        if (!isValidEmail(email)) {
+            return
+        }
+
+        if (password.isBlank()) {
+            return
+        }
+
         viewModelScope.launch {
             _isLoading.value = true
             val result = loginUseCase(email, password)
@@ -33,5 +41,9 @@ class LoginViewModel @Inject constructor(
                 tokenRefreshService.start()
             }
         }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 }
