@@ -35,7 +35,7 @@ fun CustomInputField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label, color = Color.Gray) },
+        label = { Text(label, color = Color.LightGray) },
         singleLine = true,
         textStyle = TextStyle(color = Color.White),
         visualTransformation = if (isPassword) {
