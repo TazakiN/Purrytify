@@ -2,9 +2,7 @@
 
 ## Deskripsi Aplikasi
 
-~~Purrytify hadir sebagai pahlawan dalam dunia yang kehilangan musik akibat ulah jahat Dr. Asep Spakbor. Aplikasi Android ini bukan hanya sekadar pemutar musik, melainkan sebuah gerakan perlawanan untuk mengembalikan harmoni ke Danville dan sekitarnya. Dengan Purrytify, pengguna dapat menikmati koleksi lagu favorit mereka, menjelajahi lagu-lagu baru, membuat daftar lagu yang disukai, dan bahkan menambahkan lagu dari penyimpanan lokal mereka sendiri. Dilengkapi dengan fitur Now Playing yang interaktif dan mini player yang selalu hadir, Purrytify memastikan pengalaman mendengarkan musik yang mulus dan menyenangkan. Sebagai agen rahasia O.W.C.A., misi kami adalah mengembangkan aplikasi revolusioner ini untuk mengalahkan keheningan dan mengembalikan kegembiraan melalui alunan musik!~~
-
-Purrytify adalah aplikasi yang memungkinkan pengguna untuk dengan mudah memutar musik dan menambahkan lagu-lagu baru ke dalam koleksi mereka. Aplikasi ini dibangun menggunakan bahasa pemrograman Kotlin dengan arsitektur MVVM (Model-View-ViewModel) untuk memisahkan logika bisnis dari tampilan. Selain itu, Purrytify dilengkapi dengan berbagai fitur seperti pemutaran audio yang canggih, pengelolaan daftar lagu, antrian, pengulangan, acak, dan pencarian lagu. Pengguna juga dapat menyimpan dan mengelola lagu-lagu yang disukai, dengan fitur yang memungkinkan mereka menandai lagu favorit agar lebih mudah ditemukan kapan saja.
+Purrytify adalah aplikasi yang memungkinkan pengguna untuk dengan mudah memutar musik dan menambahkan lagu-lagu baru ke dalam koleksi mereka. Aplikasi ini dibangun menggunakan bahasa pemrograman [Kotlin](https://kotlinlang.org/) dengan arsitektur [MVVM *(Model-View-ViewModel*)](https://medium.com/@MuhammadYaumilRamadhani/architecture-pattern-mvvm-android-c48c9d77fccf) untuk memisahkan logika bisnis dari tampilan. Selain itu, Purrytify dilengkapi dengan berbagai fitur seperti pemutaran lagu yang canggih, pengelolaan daftar lagu yang dimiliki, ~~antrian, pengulangan, acak~~, dan pencarian lagu. Pengguna juga dapat menyimpan dan mengelola lagu-lagu yang disukai, dengan fitur yang memungkinkan mereka menandai lagu favorit agar lebih mudah ditemukan kapan saja.
 
 ## Library yang Digunakan
 
@@ -87,8 +85,8 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
   * Persiapan: 10 jam
   * Pengerjaan: 20 jam
 * **13522032 | Tazkia Nizami:**
-  * Persiapan: 10 jam
-  * Pengerjaan: 20 jam
+  * Persiapan: 12 jam
+  * Pengerjaan: 40 jam
 * **13522114 | Muhammad Dava Fathurrahman:**
   * Persiapan: 10 jam
   * Pengerjaan: 20 jam
