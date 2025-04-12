@@ -80,8 +80,6 @@ fun LibraryScreen(
                     // Debug after adding to queue
                     Log.d("QueueDebug", "After adding to queue: Expected size = ${queueSize.size + 1}")
 
-                    // Call debug helper
-                    musicPlayerViewModel.debugQueueState()
                 }
             },
             onEdit = { song ->

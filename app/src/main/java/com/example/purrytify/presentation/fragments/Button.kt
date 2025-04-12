@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,7 +20,8 @@ fun Button(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    height: Dp = 48.dp
+    height: Dp = 48.dp,
+    enabled: Boolean = true
 ) {
     Button(
         onClick = onClick,
@@ -27,8 +29,14 @@ fun Button(
             .fillMaxWidth()
             .height(height),
         shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Green)
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (enabled) Green else Color.LightGray,
+            contentColor = Color.White,
+            disabledContainerColor = Color.LightGray,
+            disabledContentColor = Color.White.copy(alpha = 0.7f)
+        ),
+        enabled = enabled
     ) {
-        Text(text, color = Color.White, fontSize = 16.sp)
+        Text(text, color = LocalContentColor.current, fontSize = 16.sp)
     }
 }
