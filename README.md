@@ -76,7 +76,7 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 |            Queue           | 13522004 |
 |           Shuffle          | 13522032 |
 |           Repeat           | 13522004 |
-|            OWASP           |          |
+|            OWASP           | 13522114 |
 |           Search           | 13522114 |
 
 ## Jumlah Jam Persiapan dan Pengerjaan
