@@ -12,7 +12,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.purrytify.databinding.DialogAddSongBinding
 import com.example.purrytify.domain.model.Song
-import com.example.purrytify.presentation.viewmodel.LibraryViewModel
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -21,7 +20,6 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
     private var _binding: DialogAddSongBinding? = null
     private val binding get() = _binding!!
 
-    private val libraryViewModel: LibraryViewModel by viewModels(ownerProducer = { requireActivity() })
     private val musicPlayerViewModel: MusicPlayerViewModel by activityViewModels()
     private val viewModel: MusicPlayerViewModel by viewModels(ownerProducer = { requireActivity() })
 
@@ -64,12 +62,11 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
                 )
 
                 // Update the song in the database
-                libraryViewModel.updateSong(updatedSong)
+                musicPlayerViewModel.updateSong(updatedSong)
 
                 // Directly update the current song in MusicPlayerViewModel
                 musicPlayerViewModel.updateCurrentSongIfMatches(updatedSong)
 
-                Toast.makeText(context, "Lagu berhasil diperbarui!", Toast.LENGTH_SHORT).show()
                 viewModel.updateSong(updatedSong)
                 viewModel.refreshCurrentSong(updatedSong)
 

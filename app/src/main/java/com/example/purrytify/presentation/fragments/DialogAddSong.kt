@@ -23,6 +23,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Locale
 
 class DialogAddSong : BottomSheetDialogFragment() {
 
@@ -58,8 +59,14 @@ class DialogAddSong : BottomSheetDialogFragment() {
                     val durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
 
                     duration = durationStr?.toLongOrNull() ?: 0
+
                     binding.inputTitle.setText(title ?: "")
                     binding.inputArtist.setText(artist ?: "")
+                    binding.txtDurationInfo.text = if (duration > 0) {
+                        "Duration: ${formatDuration(duration)}"
+                    } else {
+                        ""
+                    }
 
                     // Extract embedded album art
                     val artBytes = mmr.embeddedPicture
@@ -212,6 +219,12 @@ class DialogAddSong : BottomSheetDialogFragment() {
             e.printStackTrace()
             null
         }
+    }
+
+    private fun formatDuration(durationMs: Long): String {
+        val minutes = (durationMs / 1000) / 60
+        val seconds = (durationMs / 1000) % 60
+        return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
     }
 
     override fun onDestroyView() {
