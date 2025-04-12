@@ -82,13 +82,13 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 
 * **13522004 | Eduardus Alvito Kristiadi:**
   * Persiapan: 10 jam
-  * Pengerjaan: 35 jam
+  * Pengerjaan: 20 jam
 * **13522032 | Tazkia Nizami:**
   * Persiapan: 12 jam
   * Pengerjaan: 41 jam
 * **13522114 | Muhammad Dava Fathurrahman:**
   * Persiapan: 10 jam
-  * Pengerjaan: 20 jam
+  * Pengerjaan: 35 jam
 
 ---
 
