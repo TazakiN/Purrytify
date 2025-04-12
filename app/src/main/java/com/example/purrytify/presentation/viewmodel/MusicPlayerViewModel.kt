@@ -123,7 +123,13 @@ class MusicPlayerViewModel @Inject constructor(
                 val initialSize = currentQueue.size
                 currentQueue.removeAll { it.id == song.id }
                 _queue.value = currentQueue
+
+                // Add more detailed logging
                 Log.d("QueueDebug", "Removed song from queue: ${song.title}. Queue size: ${initialSize} -> ${currentQueue.size}")
+                if (currentQueue.isEmpty() && _showQueue.value) {
+                    // Optionally auto-close empty queue view
+                    Log.d("QueueDebug", "Queue is now empty, consider closing queue view")
+                }
             } catch (e: Exception) {
                 Log.e("QueueDebug", "Error removing song from queue: ${e.message}", e)
             }
@@ -163,16 +169,13 @@ class MusicPlayerViewModel @Inject constructor(
     }
 
     fun toggleQueueVisibility() {
-        // First debug the queue state before toggling visibility
         Log.d("QueueDebug", "Before toggle - Queue size: ${_queue.value.size}, Visibility: ${_showQueue.value}")
 
         // Toggle visibility state
         _showQueue.value = !_showQueue.value
 
-        // Debug the queue state after toggling visibility
         Log.d("QueueDebug", "After toggle - Queue size: ${_queue.value.size}, Visibility: ${_showQueue.value}")
 
-        // Print the queue contents for debugging
         if (_queue.value.isNotEmpty()) {
             _queue.value.forEachIndexed { index, song ->
                 Log.d("QueueDebug", "Queue item $index: ${song.title} (ID: ${song.id})")
@@ -180,43 +183,40 @@ class MusicPlayerViewModel @Inject constructor(
         }
     }
 
+    fun setQueueVisibility(visible: Boolean) {
+        if (_showQueue.value != visible) {
+            _showQueue.value = visible
+            Log.d("QueueDebug", "Queue visibility explicitly set to: $visible")
+        }
+    }
+
     fun playSong(song: Song) {
         try {
-            // Release any existing MediaPlayer
             releaseMediaPlayer()
 
-            // First, check if the file exists and is accessible
             val uri = Uri.parse(song.songUri)
             try {
-                // Try to open the file to see if it's accessible
                 val afd = contentResolver.openAssetFileDescriptor(uri, "r")
 
                 if (afd != null) {
-                    // File exists, proceed with playback
                     afd.close()
 
-                    // Create new MediaPlayer
                     mediaPlayer = MediaPlayer().apply {
                         setDataSource(contentResolver.openAssetFileDescriptor(uri, "r")?.fileDescriptor)
                         prepare()
 
-                        // Update song info
                         _currentSong.value = song
                         _totalDuration.value = duration / 1000 // Convert to seconds
 
-                        // Start playing and update state
                         start()
                         _isPlaying.value = true
 
-                        // Start progress tracking
                         startProgressTracking()
 
-                        // Next song automatically (autoplay)
                         setOnCompletionListener {
                             playNextSong()
                         }
 
-                        // Update last played timestamp in the database
                         viewModelScope.launch {
                             updateLastPlayedUseCase(song.id)
                             Log.d("QueueDebug", "Started playing song: ${song.title}")
@@ -224,7 +224,6 @@ class MusicPlayerViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                // File is missing or inaccessible
                 _missingFileSong.value = song
                 Log.e("QueueDebug", "File missing or inaccessible for song: ${song.title}", e)
 
@@ -281,14 +280,12 @@ class MusicPlayerViewModel @Inject constructor(
     fun deleteSong(song: Song) {
         viewModelScope.launch {
             try {
-                // If this is the currently playing song, stop playback first
                 if (_currentSong.value?.id == song.id) {
                     releaseMediaPlayer()
                     _currentSong.value = null
                     Log.d("QueueDebug", "Currently playing song deleted and playback stopped")
                 }
 
-                // Remove from queue if present
                 val initialQueueSize = _queue.value.size
                 val newQueue = _queue.value.filter { it.id != song.id }
                 if (newQueue.size != initialQueueSize) {
@@ -296,14 +293,11 @@ class MusicPlayerViewModel @Inject constructor(
                     Log.d("QueueDebug", "Deleted song removed from queue. Queue size: ${initialQueueSize} -> ${newQueue.size}")
                 }
 
-                // Delete the song from the repository
                 songRepository.deleteSong(song)
                 Log.d("QueueDebug", "Song deleted from repository: ${song.title}")
 
-                // Close dialog after deletion
                 _showOptionsDialog.value = false
 
-                // Reset missing file state if this was the missing file
                 if (_missingFileSong.value?.id == song.id) {
                     _missingFileSong.value = null
                 }
@@ -364,8 +358,7 @@ class MusicPlayerViewModel @Inject constructor(
     }
 
     fun playPreviousSong() {
-        // For previous, we don't use the queue as that would be unintuitive
-        // Instead we just go back in the list of all songs
+        // For previous, we don't use the queue (just get from the db previos)
         val currentSong = _currentSong.value ?: return
         val currentSongIndex = _allSongs.value.indexOfFirst { it.id == currentSong.id }
 

@@ -76,7 +76,7 @@ class ReorderableLazyListState(
                 }
             }
 
-            // Auto-scroll logic
+            // Auto-scroll
             val listHeight = listState.layoutInfo.viewportEndOffset
             val distFromTop = middleOffset
             val distFromBottom = listHeight - middleOffset

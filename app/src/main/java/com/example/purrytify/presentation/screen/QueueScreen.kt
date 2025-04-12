@@ -1,5 +1,3 @@
-// Updated QueueScreen.kt - Using the same ViewModel instance
-
 package com.example.purrytify.presentation.screen
 
 import android.net.Uri
@@ -44,20 +42,18 @@ import org.burnoutcrew.reorderable.*
 @Composable
 fun QueueScreen(
     onBackPressed: () -> Unit,
-    // IMPORTANT: Use viewModel passed from parent, don't create new instance with hiltViewModel()
+    // Use viewModel passed from parent
     viewModel: MusicPlayerViewModel
 ) {
     val queue by viewModel.queue.collectAsState()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Debug queue state when screen is composed
     LaunchedEffect(Unit) {
         Log.d("QueueDebug", "QueueScreen composing with queue size: ${queue.size}")
         queue.forEachIndexed { index, song ->
             Log.d("QueueDebug", "Queue item $index: ${song.title} (ID: ${song.id})")
         }
-        // Call debug helper function to log detailed queue state
         viewModel.debugQueueState()
     }
 
@@ -84,7 +80,15 @@ fun QueueScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { onBackPressed() }) {
+                // Fixed close/back button behavior
+                IconButton(
+                    onClick = {
+                        // First ensure we update the ViewModel's state
+                        viewModel.toggleQueueVisibility()
+                        // Then trigger navigation callback
+                        onBackPressed()
+                    }
+                ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",

@@ -129,13 +129,11 @@ class MainActivity : AppCompatActivity() {
                 // Show queue screen when requested - improved with better navigation logic
                 LaunchedEffect(showQueue) {
                     if (showQueue) {
-                        // Check if we're already on the queue screen to avoid navigation loops
                         if (currentRoute != Screen.Queue.route) {
                             Log.d("QueueDebug", "Navigating to Queue screen. Current queue size: ${queueSize.size}")
                             navController.navigate(Screen.Queue.route)
                         }
                     } else {
-                        // If queue visibility is toggled off while on the queue screen, navigate back
                         if (currentRoute == Screen.Queue.route) {
                             Log.d("QueueDebug", "Queue visibility turned off, navigating back")
                             navController.popBackStack()
@@ -143,7 +141,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Network status toast
                 LaunchedEffect(networkStatus) {
                     if (networkStatus != NetworkStatus.Available) {
                         val message = when (networkStatus) {
@@ -156,14 +153,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Show dialog for missing file
                 LaunchedEffect(missingFileSong) {
                     missingFileSong?.let { song ->
-                        // Show the dialog only if we have a missing file
                         val dialogFragment = MissingFileDialog(song)
                         dialogFragment.show(supportFragmentManager, "MissingFileDialog")
 
-                        // Reset the state after showing dialog to prevent it from showing again on recomposition
                         musicPlayerViewModel.resetMissingFileState()
                     }
                 }
@@ -232,10 +226,8 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                             composable(Screen.Queue.route) {
-                                // Pass the shared musicPlayerViewModel instance to QueueScreen
                                 QueueScreen(
                                     onBackPressed = {
-                                        musicPlayerViewModel.toggleQueueVisibility()
                                         navController.popBackStack()
                                     },
                                     viewModel = musicPlayerViewModel  // Pass the existing ViewModel instance
