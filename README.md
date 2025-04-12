@@ -50,14 +50,14 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 
 | Keterangan | Gambar |
 |:----------:|:------:|
-| Login | ![Login](/screenshots/LoginScreen.png) |
-| Home | ![Home](/screenshots/HomeScreen.jpg) |
-| Library + Mini Player | ![Library](/screenshots/LibraryScreen+MiniPlayer.jpg) |
-| Profile | ![Profile](/screenshots/ProfileScreen.jpg) |
-| Music Player | ![Music Player](/screenshots/MusicPlayer.jpg) |
-| Add New Music | ![Add New Music (empty)](/screenshots/EmptyAddSong.jpg) ![Add New Music](/screenshots/AddNewSong.jpg)|
-| Music Option | ![Edit Music](/screenshots/MusicOption.jpg) |
-| Edit Music Info | ![Edit Music](/screenshots/EditSong.jpg) |
+| Login | <img src="/screenshots/LoginScreen.png" alt="Login Screen" style="max-height: 300px;"> |
+| Home | <img src="/screenshots/HomeScreen.jpg" alt="Home Screen" style="max-height: 300px;"> |
+| Library + Mini Player | <img src="/screenshots/LibraryScreen+MiniPlayer.jpg" alt="Library Screen with Mini Player" style="max-height: 300px;"> |
+| Profile | <img src="/screenshots/ProfileScreen.jpg" alt="Profile Screen" style="max-height: 300px;"> |
+| Music Player | <img src="/screenshots/MusicPlayer.jpg" alt="Music Player Screen" style="max-height: 300px;"> |
+| Add New Music | <img src="/screenshots/EmptyNewSong.jpg" alt="Add New Music - Empty State" style="max-height: 300px;"> <img src="/screenshots/AddNewSong.jpg" alt="Add New Music - Input Form" style="max-height: 300px;">|
+| Music Option | <img src="/screenshots/MusicOption.jpg" alt="Music Option Menu" style="max-height: 300px;"> |
+| Edit Music Info | <img src="/screenshots/EditSong.jpg" alt="Edit Music Information" style="max-height: 300px;"> |
 
 ## Pembagian Kerja Anggota Kelompok
 
@@ -95,9 +95,9 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 
 ## Analisis Keamanan Aplikasi Berdasarkan OWASP (2024)
 
-- **M4: Insufficient Input/Output Validation**
-- **M8: Security Misconfiguration**
-- **M9: Insecure Data Storage**
+* **M4: Insufficient Input/Output Validation**
+* **M8: Security Misconfiguration**
+* **M9: Insecure Data Storage**
 
 ---
 
@@ -123,6 +123,7 @@ fun login(email: String, password: String) {
 ```
 
 ### Sesudah:
+
 ```kotlin
 fun login(email: String, password: String) {
     if (!isValidEmail(email)) return
@@ -166,6 +167,7 @@ Saat ini, database **tidak menyimpan data sensitif**, sehingga **belum diperluka
 Semua query menggunakan **parameter binding**, bukan konkatenasi string. Ini membuat database aman dari SQL Injection.
 
 ### Contoh:
+
 ```kotlin
 @Query("UPDATE songs SET lastPlayed = :timestamp WHERE id = :songId")
 suspend fun updateLastPlayed(songId: Int, timestamp: Long)
@@ -178,6 +180,7 @@ suspend fun updateLastPlayed(songId: Int, timestamp: Long)
 Pengguna dapat memilih gambar dari storage eksternal, dan kami memberikan fallback image jika gambar rusak atau tidak ditemukan.
 
 ### Sebelum:
+
 ```kotlin
 rememberAsyncImagePainter(
     ImageRequest.Builder(context)
@@ -187,6 +190,7 @@ rememberAsyncImagePainter(
 ```
 
 ### Sesudah:
+
 ```kotlin
 rememberAsyncImagePainter(
     ImageRequest.Builder(context)
@@ -204,11 +208,13 @@ rememberAsyncImagePainter(
 Jika nilai `profilePhoto` mengandung karakter berbahaya seperti `../`, maka bisa terjadi Path Traversal.
 
 ### Sebelum:
+
 ```kotlin
 profilePhoto = RetrofitClient.profilePictureUrlBuilder(profileResponse.profilePhoto)
 ```
 
 ### Sesudah:
+
 ```kotlin
 profilePhoto = sanitizeProfilePhoto(profileResponse.profilePhoto)
 
