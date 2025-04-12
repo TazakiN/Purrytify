@@ -63,6 +63,14 @@ class MusicPlayerViewModel @Inject constructor(
         viewModelScope.launch {
             songRepository.getAllSongs().collectLatest { songs ->
                 _allSongs.value = songs
+
+                // If a song is currently playing, update its data if it exists in the new list
+                _currentSong.value?.let { currentSong ->
+                    val updatedSong = songs.find { it.id == currentSong.id }
+                    if (updatedSong != null && updatedSong != currentSong) {
+                        _currentSong.value = updatedSong
+                    }
+                }
             }
         }
     }
@@ -164,6 +172,12 @@ class MusicPlayerViewModel @Inject constructor(
                 e.printStackTrace()
                 // Handle error
             }
+        }
+    }
+
+    fun updateCurrentSongIfMatches(updatedSong: Song) {
+        if (_currentSong.value?.id == updatedSong.id) {
+            _currentSong.value = updatedSong
         }
     }
 
