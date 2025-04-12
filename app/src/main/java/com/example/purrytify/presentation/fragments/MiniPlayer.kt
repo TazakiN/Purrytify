@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
@@ -30,6 +31,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.purrytify.R
 import com.example.purrytify.presentation.theme.DarkGray
+import com.example.purrytify.presentation.theme.Green
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 
 @Composable
@@ -39,6 +41,7 @@ fun MiniPlayer(
 ) {
     val currentSong by viewModel.currentSong.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
+    val queue by viewModel.queue.collectAsState()
     val context = LocalContext.current
 
     if (currentSong == null) return // Don't show mini player if no song is playing
@@ -96,14 +99,45 @@ fun MiniPlayer(
                         .weight(1f)
                         .padding(horizontal = 12.dp)
                 ) {
-                    Text(
-                        text = currentSong?.title ?: "",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = currentSong?.title ?: "",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        // Show queue indicator if songs are in the queue
+                        if (queue.isNotEmpty()) {
+                            BadgedBox(
+                                badge = {
+                                    Badge(
+                                        containerColor = Green,
+                                        contentColor = Color.Black
+                                    ) {
+                                        Text(
+                                            text = "${queue.size}",
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.size(16.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.QueueMusic,
+                                    contentDescription = "Queue",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                    }
 
                     Text(
                         text = currentSong?.artist ?: "",

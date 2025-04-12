@@ -27,11 +27,7 @@ import com.example.purrytify.domain.model.NetworkStatus
 import com.example.purrytify.presentation.fragments.BottomNavigationBar
 import com.example.purrytify.presentation.fragments.MiniPlayer
 import com.example.purrytify.presentation.fragments.MissingFileDialog
-import com.example.purrytify.presentation.screen.HomeScreen
-import com.example.purrytify.presentation.screen.LibraryScreen
-import com.example.purrytify.presentation.screen.LoginScreen
-import com.example.purrytify.presentation.screen.MusicPlayerScreen
-import com.example.purrytify.presentation.screen.ProfileScreen
+import com.example.purrytify.presentation.screen.*
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import com.example.purrytify.presentation.viewmodel.NetworkViewModel
@@ -46,6 +42,7 @@ sealed class Screen(val route: String, val title: String, val icon: Int) {
     data object Library : Screen("library", "Your Library", R.drawable.ic_library)
     data object Profile : Screen("profile", "Profile", R.drawable.ic_profile)
     data object Player : Screen("player", "Music Player", 0)
+    data object Queue : Screen("queue", "Play Queue", 0)
 }
 
 @AndroidEntryPoint
@@ -77,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
                 val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
                 val showFullPlayer by musicPlayerViewModel.showFullPlayer.collectAsStateWithLifecycle()
+                val showQueue by musicPlayerViewModel.showQueue.collectAsStateWithLifecycle()
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
 
                 // Add state for missing file song
@@ -84,7 +82,9 @@ class MainActivity : AppCompatActivity() {
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
-                val showBottomBar = currentRoute != Screen.Login.route && currentRoute != Screen.Player.route
+                val showBottomBar = currentRoute != Screen.Login.route &&
+                        currentRoute != Screen.Player.route &&
+                        currentRoute != Screen.Queue.route
                 val showMiniPlayer = showBottomBar && currentSong != null
 
                 // Navigation logic after splash and login status are known
@@ -111,6 +111,13 @@ class MainActivity : AppCompatActivity() {
                 LaunchedEffect(showFullPlayer) {
                     if (showFullPlayer && currentSong != null) {
                         navController.navigate(Screen.Player.route)
+                    }
+                }
+
+                // Show queue screen when requested
+                LaunchedEffect(showQueue) {
+                    if (showQueue) {
+                        navController.navigate(Screen.Queue.route)
                     }
                 }
 
@@ -198,6 +205,14 @@ class MainActivity : AppCompatActivity() {
                                     viewModel = musicPlayerViewModel,
                                     onBackPressed = {
                                         musicPlayerViewModel.togglePlayerView()
+                                        navController.popBackStack()
+                                    }
+                                )
+                            }
+                            composable(Screen.Queue.route) {
+                                QueueScreen(
+                                    onBackPressed = {
+                                        musicPlayerViewModel.toggleQueueVisibility()
                                         navController.popBackStack()
                                     }
                                 )

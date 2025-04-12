@@ -1,5 +1,6 @@
 package com.example.purrytify.presentation.viewmodel
 
+import android.util.Log
 import android.content.ContentResolver
 import android.media.MediaPlayer
 import android.net.Uri
@@ -16,7 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,6 +37,14 @@ class MusicPlayerViewModel @Inject constructor(
 
     // StateFlow for all songs in order
     private val _allSongs = MutableStateFlow<List<Song>>(emptyList())
+
+    // StateFlow for queue
+    private val _queue = MutableStateFlow<List<Song>>(emptyList())
+    val queue: StateFlow<List<Song>> = _queue
+
+    // StateFlow to show if queue UI is visible
+    private val _showQueue = MutableStateFlow(false)
+    val showQueue: StateFlow<Boolean> = _showQueue
 
     // StateFlow for player state
     private val _isPlaying = MutableStateFlow(false)
@@ -75,8 +83,60 @@ class MusicPlayerViewModel @Inject constructor(
                         _currentSong.value = updatedSong
                     }
                 }
+
+                // Update any queued songs too
+                if (_queue.value.isNotEmpty()) {
+                    val updatedQueue = _queue.value.map { queuedSong ->
+                        songs.find { it.id == queuedSong.id } ?: queuedSong
+                    }
+                    _queue.value = updatedQueue
+                }
             }
         }
+    }
+
+    fun addToQueue(song: Song) {
+        viewModelScope.launch {
+            val currentQueue = _queue.value.toMutableList()
+            // Check if the song is already in the queue to avoid duplicates
+            if (!currentQueue.any { it.id == song.id }) {
+                currentQueue.add(song)
+                _queue.value = currentQueue
+
+                // Debug log to track queue operations
+                Log.d("QueueDebug", "Added song to queue: ${song.title}. Queue size now: ${_queue.value.size}")
+            }
+        }
+    }
+
+    fun removeFromQueue(song: Song) {
+        val currentQueue = _queue.value.toMutableList()
+        currentQueue.removeAll { it.id == song.id }
+        _queue.value = currentQueue
+        Log.d("QueueDebug", "Removed song from queue: ${song.title}. Queue size now: ${_queue.value.size}")
+    }
+
+    fun clearQueue() {
+        _queue.value = emptyList()
+        Log.d("QueueDebug", "Queue cleared. Size now: 0")
+    }
+
+    fun reorderQueue(fromPosition: Int, toPosition: Int) {
+        if (fromPosition < 0 || toPosition < 0 ||
+            fromPosition >= _queue.value.size ||
+            toPosition >= _queue.value.size) {
+            return
+        }
+
+        val currentQueue = _queue.value.toMutableList()
+        val song = currentQueue.removeAt(fromPosition)
+        currentQueue.add(toPosition, song)
+        _queue.value = currentQueue
+    }
+
+    fun toggleQueueVisibility() {
+        _showQueue.value = !_showQueue.value
+        Log.d("QueueDebug", "Queue visibility toggled. Visible: ${_showQueue.value}. Current queue size: ${_queue.value.size}")
     }
 
     fun playSong(song: Song) {
@@ -110,7 +170,7 @@ class MusicPlayerViewModel @Inject constructor(
                         // Start progress tracking
                         startProgressTracking()
 
-                        // Next song otomatis (autoplay)
+                        // Next song automatically (autoplay)
                         setOnCompletionListener {
                             playNextSong()
                         }
@@ -187,6 +247,9 @@ class MusicPlayerViewModel @Inject constructor(
                     _currentSong.value = null
                 }
 
+                // Remove from queue if present
+                removeFromQueue(song)
+
                 // Delete the song from the repository
                 songRepository.deleteSong(song)
 
@@ -208,9 +271,32 @@ class MusicPlayerViewModel @Inject constructor(
         if (_currentSong.value?.id == updatedSong.id) {
             _currentSong.value = updatedSong
         }
+
+        // Also update in queue if present
+        if (_queue.value.any { it.id == updatedSong.id }) {
+            val updatedQueue = _queue.value.map {
+                if (it.id == updatedSong.id) updatedSong else it
+            }
+            _queue.value = updatedQueue
+        }
     }
 
     fun playNextSong() {
+        // First check if there's anything in the queue
+        if (_queue.value.isNotEmpty()) {
+            // Play the first song in the queue
+            val nextSong = _queue.value.first()
+            playSong(nextSong)
+
+            // Remove the played song from the queue
+            val updatedQueue = _queue.value.toMutableList()
+            updatedQueue.removeAt(0)
+            _queue.value = updatedQueue
+
+            return
+        }
+
+        // If no queue, fallback to the default sequential behavior
         val currentSong = _currentSong.value ?: return
         val currentSongIndex = _allSongs.value.indexOfFirst { it.id == currentSong.id }
 
@@ -226,6 +312,8 @@ class MusicPlayerViewModel @Inject constructor(
     }
 
     fun playPreviousSong() {
+        // For previous, we don't use the queue as that would be unintuitive
+        // Instead we just go back in the list of all songs
         val currentSong = _currentSong.value ?: return
         val currentSongIndex = _allSongs.value.indexOfFirst { it.id == currentSong.id }
 

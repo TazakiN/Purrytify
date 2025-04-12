@@ -42,6 +42,7 @@ fun MusicPlayerScreen(
     val currentPosition by viewModel.currentPosition.collectAsState()
     val totalDuration by viewModel.totalDuration.collectAsState()
     val showOptionsDialog by viewModel.showOptionsDialog.collectAsState()
+    val queue by viewModel.queue.collectAsState()
     val context = LocalContext.current
 
     if (currentSong == null) {
@@ -145,12 +146,40 @@ fun MusicPlayerScreen(
                     color = Color.White
                 )
 
-                IconButton(onClick = { viewModel.toggleOptionsDialog() }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Options",
-                        tint = Color.White
-                    )
+                Row {
+                    // Queue button
+                    IconButton(onClick = { viewModel.toggleQueueVisibility() }) {
+                        BadgedBox(
+                            badge = {
+                                if (queue.isNotEmpty()) {
+                                    Badge(
+                                        containerColor = Green,
+                                        contentColor = Color.Black
+                                    ) {
+                                        Text(
+                                            text = if (queue.size > 9) "9+" else queue.size.toString(),
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.QueueMusic,
+                                contentDescription = "Queue",
+                                tint = Color.White
+                            )
+                        }
+                    }
+
+                    // Options button
+                    IconButton(onClick = { viewModel.toggleOptionsDialog() }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Options",
+                            tint = Color.White
+                        )
+                    }
                 }
             }
 
