@@ -74,7 +74,7 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 |     Background Service     | 13522032 |
 |       Network Sensing      | 13522032 |
 |            Queue           | 13522004 |
-|           Shuffle          | 13522004 |
+|           Shuffle          | 13522032 |
 |           Repeat           | 13522004 |
 |            OWASP           |          |
 |           Search           | 13522114 |
