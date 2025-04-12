@@ -123,9 +123,10 @@ fun LoginScreen(
                 loginResult.value?.let { result ->
                     if (result.isFailure) {
                         Text(
-                            "Login Failed: ${result.exceptionOrNull()?.message ?: "Unknown error"}",
+                            result.exceptionOrNull()?.message ?: "Unknown error",
                             color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(top = 8.dp)
+                            modifier = Modifier.padding(top = 8.dp),
+                            fontWeight = FontWeight.Medium
                         )
                     }
                     if (result.isSuccess) {
