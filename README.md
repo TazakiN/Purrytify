@@ -50,7 +50,7 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 
 | Keterangan | Gambar |
 |:----------:|:------:|
-| Login | <img src="/screenshots/LoginScreen.png" alt="Login Screen" style="max-height: 300px;"> |
+| Login | <img src="/screenshots/LoginScreen_Empty.jpg" alt="Login Screen" style="max-height: 300px;"> <img src="/screenshots/LoginScreen_Filled.jpg" alt="Login Screen" style="max-height: 300px;"> |
 | Home | <img src="/screenshots/HomeScreen.jpg" alt="Home Screen" style="max-height: 300px;"> |
 | Library + Mini Player | <img src="/screenshots/LibraryScreen+MiniPlayer.jpg" alt="Library Screen with Mini Player" style="max-height: 300px;"> |
 | Profile | <img src="/screenshots/ProfileScreen.jpg" alt="Profile Screen" style="max-height: 300px;"> |
