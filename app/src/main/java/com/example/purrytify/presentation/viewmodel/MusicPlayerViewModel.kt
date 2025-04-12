@@ -58,6 +58,10 @@ class MusicPlayerViewModel @Inject constructor(
     private val _showOptionsDialog = MutableStateFlow(false)
     val showOptionsDialog: StateFlow<Boolean> = _showOptionsDialog
 
+    // New StateFlow to indicate that a file is missing
+    private val _missingFileSong = MutableStateFlow<Song?>(null)
+    val missingFileSong: StateFlow<Song?> = _missingFileSong
+
     init {
         // Load all songs to have an ordered list for next/previous functionality
         viewModelScope.launch {
@@ -80,41 +84,61 @@ class MusicPlayerViewModel @Inject constructor(
             // Release any existing MediaPlayer
             releaseMediaPlayer()
 
-            // Create new MediaPlayer
-            mediaPlayer = MediaPlayer().apply {
-                val uri = Uri.parse(song.songUri)
+            // First, check if the file exists and is accessible
+            val uri = Uri.parse(song.songUri)
+            try {
+                // Try to open the file to see if it's accessible
                 val afd = contentResolver.openAssetFileDescriptor(uri, "r")
+
                 if (afd != null) {
-                    setDataSource(afd.fileDescriptor)
+                    // File exists, proceed with playback
                     afd.close()
-                    prepare()
 
-                    // Update song info
-                    _currentSong.value = song
-                    _totalDuration.value = duration / 1000 // Convert to seconds
+                    // Create new MediaPlayer
+                    mediaPlayer = MediaPlayer().apply {
+                        setDataSource(contentResolver.openAssetFileDescriptor(uri, "r")?.fileDescriptor)
+                        prepare()
 
-                    // Start playing and update state
-                    start()
-                    _isPlaying.value = true
+                        // Update song info
+                        _currentSong.value = song
+                        _totalDuration.value = duration / 1000 // Convert to seconds
 
-                    // Start progress tracking
-                    startProgressTracking()
+                        // Start playing and update state
+                        start()
+                        _isPlaying.value = true
 
-                    // Next song otomatis (autoplay)
-                    setOnCompletionListener {
-                        playNextSong()
-                    }
+                        // Start progress tracking
+                        startProgressTracking()
 
-                    // Update last played timestamp in the database
-                    viewModelScope.launch {
-                        updateLastPlayedUseCase(song.id)
+                        // Next song otomatis (autoplay)
+                        setOnCompletionListener {
+                            playNextSong()
+                        }
+
+                        // Update last played timestamp in the database
+                        viewModelScope.launch {
+                            updateLastPlayedUseCase(song.id)
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                // File is missing or inaccessible
+                _missingFileSong.value = song
+
+                // Reset these for safety
+                _currentSong.value = null
+                _isPlaying.value = false
+
+                e.printStackTrace()
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            // Handle error
+            // Handle other errors
         }
+    }
+
+    fun resetMissingFileState() {
+        _missingFileSong.value = null
     }
 
     fun togglePlayPause() {
@@ -168,6 +192,11 @@ class MusicPlayerViewModel @Inject constructor(
 
                 // Close dialog after deletion
                 _showOptionsDialog.value = false
+
+                // Reset missing file state if this was the missing file
+                if (_missingFileSong.value?.id == song.id) {
+                    _missingFileSong.value = null
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 // Handle error

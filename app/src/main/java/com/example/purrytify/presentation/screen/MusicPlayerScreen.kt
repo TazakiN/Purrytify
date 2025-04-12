@@ -48,13 +48,49 @@ fun MusicPlayerScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Black),
-            contentAlignment = Alignment.Center
+                .background(Black)
         ) {
-            Text(
-                text = "No song is currently playing",
-                color = Color.White
-            )
+            // Top bar with back button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { onBackPressed() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Text(
+                    text = "Player",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+
+                // Empty spacer to balance the layout
+                Spacer(modifier = Modifier.size(48.dp))
+            }
+
+            // Center text
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No song is currently playing",
+                    color = Color.White,
+                    fontSize = 16.sp
+                )
+            }
         }
         return
     }

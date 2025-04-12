@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -22,8 +23,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.purrytify.data.service.TokenRefreshService
+import com.example.purrytify.domain.model.NetworkStatus
 import com.example.purrytify.presentation.fragments.BottomNavigationBar
 import com.example.purrytify.presentation.fragments.MiniPlayer
+import com.example.purrytify.presentation.fragments.MissingFileDialog
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LibraryScreen
 import com.example.purrytify.presentation.screen.LoginScreen
@@ -31,10 +34,9 @@ import com.example.purrytify.presentation.screen.MusicPlayerScreen
 import com.example.purrytify.presentation.screen.ProfileScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
+import com.example.purrytify.presentation.viewmodel.NetworkViewModel
 import com.example.purrytify.presentation.viewmodel.SplashViewModel
 import com.example.purrytify.presentation.viewmodel.StartupLoginState
-import com.example.purrytify.presentation.viewmodel.NetworkViewModel
-import com.example.purrytify.domain.model.NetworkStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -76,6 +78,9 @@ class MainActivity : AppCompatActivity() {
                 val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
                 val showFullPlayer by musicPlayerViewModel.showFullPlayer.collectAsStateWithLifecycle()
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
+
+                // Add state for missing file song
+                val missingFileSong by musicPlayerViewModel.missingFileSong.collectAsStateWithLifecycle()
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
@@ -119,6 +124,18 @@ class MainActivity : AppCompatActivity() {
                             else -> "Unknown network error."
                         }
                         Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                // Show dialog for missing file
+                LaunchedEffect(missingFileSong) {
+                    missingFileSong?.let { song ->
+                        // Show the dialog only if we have a missing file
+                        val dialogFragment = MissingFileDialog(song)
+                        dialogFragment.show(supportFragmentManager, "MissingFileDialog")
+
+                        // Reset the state after showing dialog to prevent it from showing again on recomposition
+                        musicPlayerViewModel.resetMissingFileState()
                     }
                 }
 
