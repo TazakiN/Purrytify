@@ -63,16 +63,21 @@ class DialogAddSong : BottomSheetDialogFragment() {
 
                     // Extract embedded album art
                     val artBytes = mmr.embeddedPicture
-                    val decodedBitmap = artBytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
-
-                    if (decodedBitmap != null) {
-                        artworkBitmap = decodedBitmap
-                        binding.imgArtworkPreview.setImageBitmap(decodedBitmap)
-                        binding.txtArtworkLabel.text = "Embedded Cover Art"
+                    if (artBytes != null) {
+                        try {
+                            artworkBitmap = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
+                            binding.imgArtworkPreview.setImageBitmap(artworkBitmap)
+                            binding.txtArtworkLabel.text = "Embedded Cover Art"
+                        } catch (e: Exception) {
+                            Log.e("Artwork", "Corrupted embedded artwork")
+                            artworkBitmap = null
+                            binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
+                            binding.txtArtworkLabel.text = "Invalid Embedded Artwork"
+                        }
                     } else {
                         artworkBitmap = null
                         binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
-                        binding.txtArtworkLabel.text = "No Artwork or corrupted"
+                        binding.txtArtworkLabel.text = "No Artwork"
                     }
 
                     mmr.release()
@@ -91,6 +96,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
             selectedArtworkUri = it
+            artworkBitmap = null // clear embedded image
             binding.imgArtworkPreview.setImageURI(it)
             binding.txtArtworkLabel.text = "Photo Selected"
         }
@@ -123,14 +129,15 @@ class DialogAddSong : BottomSheetDialogFragment() {
             val title = binding.inputTitle.text.toString().trim()
             val artist = binding.inputArtist.text.toString().trim()
             val uri = songUri?.toString()
-            val artwork = selectedArtworkUri?.toString()
 
-            Log.d("ArtworkURI", "Saved artwork URI: $artwork")
+            // Determine artwork URI to use
+            val artworkUriToSave = when {
+                selectedArtworkUri != null -> selectedArtworkUri.toString()
+                artworkBitmap != null -> saveBitmapToInternalStorage(artworkBitmap!!, title)
+                else -> null
+            }
 
             if (title.isNotEmpty() && artist.isNotEmpty() && uri != null && duration > 0) {
-                // Save the artwork bitmap only when the "Save" button is clicked
-                val artworkUriToSave = saveArtworkBitmapIfNeeded(artworkBitmap, title)
-
                 viewModel.addSong(
                     Song(
                         id = 0,
@@ -160,14 +167,6 @@ class DialogAddSong : BottomSheetDialogFragment() {
         }
     }
 
-    private fun saveArtworkBitmapIfNeeded(bitmap: Bitmap?, title: String): String? {
-        if (bitmap != null) {
-            // Save the artwork bitmap to internal storage if needed
-            return saveBitmapToInternalStorage(bitmap, title)
-        }
-        return null
-    }
-
     private fun getFileNameFromUri(uri: Uri): String {
         var result: String? = null
         if (uri.scheme == "content") {
@@ -185,9 +184,8 @@ class DialogAddSong : BottomSheetDialogFragment() {
     private fun saveBitmapToInternalStorage(bitmap: Bitmap, title: String): String? {
         return try {
             val context = requireContext()
-
-            // Create a unique filename using the current time in milliseconds
-            val uniqueFileName = "${System.currentTimeMillis()}_${title.takeIf { it.isNotEmpty() } ?: "artwork"}.jpg"
+            val sanitizedTitle = title.replace("[^a-zA-Z0-9_\\-]".toRegex(), "")
+            val uniqueFileName = "${System.currentTimeMillis()}_${sanitizedTitle}.jpg"
 
             val file = File(context.filesDir, uniqueFileName)
             val out = FileOutputStream(file)
@@ -195,7 +193,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
             out.flush()
             out.close()
 
-            file.absolutePath // Return the unique file path
+            file.absolutePath
         } catch (e: Exception) {
             e.printStackTrace()
             null

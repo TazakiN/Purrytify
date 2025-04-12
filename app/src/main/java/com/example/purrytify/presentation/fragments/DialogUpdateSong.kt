@@ -42,12 +42,10 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
         binding.boxSong.isEnabled = false
         binding.boxSong.alpha = 0.5f
 
-        // Bisa ubah artwork
         binding.boxArtwork.setOnClickListener {
             pickImage.launch(arrayOf("image/*"))
         }
 
-        // Save perubahan
         binding.btnSave.text = "Save Changes"
         binding.btnSave.setOnClickListener {
             val newTitle = binding.inputTitle.text.toString().trim()

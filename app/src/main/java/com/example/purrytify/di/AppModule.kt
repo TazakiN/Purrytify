@@ -25,7 +25,7 @@ object AppModule {
             AppDatabase::class.java,
             "purrytify_db"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 
