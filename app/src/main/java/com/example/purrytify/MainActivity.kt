@@ -14,8 +14,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,7 +30,13 @@ import com.example.purrytify.domain.model.NetworkStatus
 import com.example.purrytify.presentation.fragments.BottomNavigationBar
 import com.example.purrytify.presentation.fragments.MiniPlayer
 import com.example.purrytify.presentation.fragments.MissingFileDialog
-import com.example.purrytify.presentation.screen.*
+import com.example.purrytify.presentation.screen.HomeScreen
+import com.example.purrytify.presentation.screen.LibraryScreen
+import com.example.purrytify.presentation.screen.LoadingIndicatorScreen
+import com.example.purrytify.presentation.screen.LoginScreen
+import com.example.purrytify.presentation.screen.MusicPlayerScreen
+import com.example.purrytify.presentation.screen.ProfileScreen
+import com.example.purrytify.presentation.screen.QueueScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import com.example.purrytify.presentation.viewmodel.NetworkViewModel
@@ -38,6 +46,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 sealed class Screen(val route: String, val title: String, val icon: Int) {
+    data object Splash : Screen("splash", "Splash", 0)
     data object Login : Screen("login", "Login", R.drawable.ic_login)
     data object Home : Screen("home", "Home", R.drawable.ic_home)
     data object Library : Screen("library", "Your Library", R.drawable.ic_library)
@@ -79,17 +88,8 @@ class MainActivity : AppCompatActivity() {
                 val queueSize by musicPlayerViewModel.queue.collectAsStateWithLifecycle()
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
 
-                // For debugging queue functionality
-                LaunchedEffect(queueSize.size) {
-                    Log.d("QueueDebug", "Queue size changed in MainActivity: ${queueSize.size}")
-                    if (queueSize.isNotEmpty()) {
-                        queueSize.forEachIndexed { index, song ->
-                            Log.d("QueueDebug", "Queue item $index: ${song.title}")
-                        }
-                    }
-                }
+                var previousNetworkStatus by remember { mutableStateOf(NetworkStatus.Available) }
 
-                // Add state for missing file song
                 val missingFileSong by musicPlayerViewModel.missingFileSong.collectAsStateWithLifecycle()
 
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -106,12 +106,12 @@ class MainActivity : AppCompatActivity() {
                             StartupLoginState.LoggedIn -> {
                                 tokenRefreshService.start()
                                 navController.navigate(Screen.Home.route) {
-                                    popUpTo(0) { inclusive = true }
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
                                 }
                             }
                             StartupLoginState.LoggedOut -> {
                                 navController.navigate(Screen.Login.route) {
-                                    popUpTo(0) { inclusive = true }
+                                    popUpTo(Screen.Splash.route) { inclusive = true }
                                 }
                             }
                             else -> {} // loading state
@@ -142,14 +142,19 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 LaunchedEffect(networkStatus) {
-                    if (networkStatus != NetworkStatus.Available) {
-                        val message = when (networkStatus) {
-                            NetworkStatus.Unavailable -> "Tidak ada koneksi internet."
-                            NetworkStatus.Lost -> "Koneksi internet terputus."
-                            NetworkStatus.Losing -> "Koneksi internet tidak stabil."
-                            else -> "Unknown network error."
+                    if (networkStatus != previousNetworkStatus) {
+                        if (networkStatus == NetworkStatus.Available && previousNetworkStatus != NetworkStatus.Available) {
+                            Toast.makeText(this@MainActivity, "Koneksi internet tersedia.", Toast.LENGTH_SHORT).show()
+                        } else if (networkStatus != NetworkStatus.Available) {
+                            val message = when (networkStatus) {
+                                NetworkStatus.Unavailable -> "Tidak ada koneksi internet."
+                                NetworkStatus.Lost -> "Koneksi internet terputus."
+                                NetworkStatus.Losing -> "Koneksi internet tidak stabil."
+                                else -> "Unknown network error."
+                            }
+                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
                         }
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+                        previousNetworkStatus = networkStatus
                     }
                 }
 
@@ -190,8 +195,11 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         NavHost(
                             navController = navController,
-                            startDestination = Screen.Login.route
+                            startDestination = Screen.Splash.route
                         ) {
+                            composable(Screen.Splash.route) {
+                                LoadingIndicatorScreen(loadingText = "Loading...")
+                            }
                             composable(Screen.Login.route) {
                                 LoginScreen(
                                     onLoginSuccess = {

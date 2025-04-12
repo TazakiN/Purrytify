@@ -34,6 +34,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
     private var songUri: Uri? = null
     private var duration: Long = 0L
     private var selectedArtworkUri: Uri? = null
+    private var artworkBitmap: Bitmap? = null
 
     private val pickAudio = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
@@ -63,22 +64,25 @@ class DialogAddSong : BottomSheetDialogFragment() {
                     // Extract embedded album art
                     val artBytes = mmr.embeddedPicture
                     if (artBytes != null) {
-                        val bitmap = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
-                        binding.imgArtworkPreview.setImageBitmap(bitmap)
-                        binding.txtArtworkLabel.text = "Embedded Cover Art"
-
-                        // Save to internal storage as file://
-                        val savedUri = saveBitmapToInternalStorage(bitmap, title ?: "artwork_${System.currentTimeMillis()}")
-                        selectedArtworkUri = savedUri
+                        try {
+                            artworkBitmap = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
+                            binding.imgArtworkPreview.setImageBitmap(artworkBitmap)
+                            binding.txtArtworkLabel.text = "Embedded Cover Art"
+                        } catch (e: Exception) {
+                            Log.e("Artwork", "Corrupted embedded artwork")
+                            artworkBitmap = null
+                            binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
+                            binding.txtArtworkLabel.text = "Invalid Embedded Artwork"
+                        }
                     } else {
+                        artworkBitmap = null
                         binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
                         binding.txtArtworkLabel.text = "No Artwork"
-                        selectedArtworkUri = null
                     }
 
                     mmr.release()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Gagal membaca metadata lagu", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to read song metadata", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
                 }
             }
@@ -91,9 +95,24 @@ class DialogAddSong : BottomSheetDialogFragment() {
                 it,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            selectedArtworkUri = it
-            binding.imgArtworkPreview.setImageURI(it)
-            binding.txtArtworkLabel.text = "Photo Selected"
+
+            try {
+                val inputStream = requireContext().contentResolver.openInputStream(it)
+                val decodedBitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+
+                if (decodedBitmap != null) {
+                    selectedArtworkUri = it
+                    artworkBitmap = null // clear embedded image
+                    binding.imgArtworkPreview.setImageBitmap(decodedBitmap)
+                    binding.txtArtworkLabel.text = "Photo Selected"
+                } else {
+                    Toast.makeText(context, "Selected image is corrupted or unsupported.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to load selected image.", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
         }
     }
 
@@ -124,9 +143,13 @@ class DialogAddSong : BottomSheetDialogFragment() {
             val title = binding.inputTitle.text.toString().trim()
             val artist = binding.inputArtist.text.toString().trim()
             val uri = songUri?.toString()
-            val artwork = selectedArtworkUri?.toString()
 
-            Log.d("ArtworkURI", "Saved artwork URI: $artwork")
+            // Determine artwork URI to use
+            val artworkUriToSave = when {
+                selectedArtworkUri != null -> selectedArtworkUri.toString()
+                artworkBitmap != null -> saveBitmapToInternalStorage(artworkBitmap!!, title)
+                else -> null
+            }
 
             if (title.isNotEmpty() && artist.isNotEmpty() && uri != null && duration > 0) {
                 viewModel.addSong(
@@ -134,17 +157,26 @@ class DialogAddSong : BottomSheetDialogFragment() {
                         id = 0,
                         title = title,
                         artist = artist,
-                        artworkUri = artwork,
+                        artworkUri = artworkUriToSave,
                         songUri = uri,
                         duration = duration,
                         isLiked = false,
                         username = "You"
                     )
-                )
-                Toast.makeText(context, "Lagu berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
-                dismiss()
+                ) { result ->
+                    result.onSuccess {
+                        Toast.makeText(context, "Song successfully added!", Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }.onFailure { exception ->
+                        if (exception is IllegalArgumentException) {
+                            Toast.makeText(context, exception.message ?: "A song with the same title and artist already exists!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Failed to add the song!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             } else {
-                Toast.makeText(context, "Lengkapi semua data terlebih dahulu!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Please complete all the fields!", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -163,15 +195,19 @@ class DialogAddSong : BottomSheetDialogFragment() {
         return result ?: uri.lastPathSegment ?: "Unknown"
     }
 
-    private fun saveBitmapToInternalStorage(bitmap: Bitmap, fileName: String): Uri? {
+    private fun saveBitmapToInternalStorage(bitmap: Bitmap, title: String): String? {
         return try {
             val context = requireContext()
-            val file = File(context.filesDir, "$fileName.jpg")
+            val sanitizedTitle = title.replace("[^a-zA-Z0-9_\\-]".toRegex(), "")
+            val uniqueFileName = "${System.currentTimeMillis()}_${sanitizedTitle}.jpg"
+
+            val file = File(context.filesDir, uniqueFileName)
             val out = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
             out.flush()
             out.close()
-            Uri.fromFile(file) // Use file:// URI
+
+            file.absolutePath
         } catch (e: Exception) {
             e.printStackTrace()
             null

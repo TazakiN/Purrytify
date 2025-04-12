@@ -39,7 +39,6 @@ fun HomeScreen(
 
             val playSong: (song: com.example.purrytify.domain.model.Song) -> Unit = { song ->
                 try {
-                    // Use MusicPlayerViewModel instead of creating a new MediaPlayer
                     musicPlayerViewModel.playSong(song)
                     Toast.makeText(ctx, "Playing: ${song.title}", Toast.LENGTH_SHORT).show()
                     libraryViewModel.updateLastPlayed(song.id)
@@ -50,7 +49,6 @@ fun HomeScreen(
                 }
             }
 
-            // Store adapters to tags for later access in update
             val adapterRecently = SongAdapter(recentlyPlayed, playSong)
             val adapterNew = SongVerticalAdapter(newSongs, playSong)
 

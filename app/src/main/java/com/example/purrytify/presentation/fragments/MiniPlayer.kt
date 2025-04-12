@@ -57,7 +57,7 @@ fun MiniPlayer(
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
-            .background(color = Color(0xFF7B1FA2)) // Purple color matching Figma
+            .background(color = Color(0xFF7B1FA2))
     ) {
         Row(
             modifier = Modifier
@@ -84,6 +84,8 @@ fun MiniPlayer(
                             painter = rememberAsyncImagePainter(
                                 ImageRequest.Builder(context)
                                     .data(Uri.parse(currentSong?.artworkUri))
+                                    .error(R.drawable.ic_artwork_placeholder) // Show if loading fails (e.g. corrupt)
+                                    .placeholder(R.drawable.ic_artwork_placeholder) // Optional: show while loading
                                     .build()
                             ),
                             contentDescription = "Album Cover",

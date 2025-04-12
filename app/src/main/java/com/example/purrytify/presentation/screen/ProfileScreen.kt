@@ -43,7 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.purrytify.R
 import com.example.purrytify.presentation.theme.Black
 import com.example.purrytify.presentation.theme.Green
@@ -99,13 +100,13 @@ fun ProfileScreen(
                             tint = Color.White
                         )
                     } else {
-                        val painter = rememberImagePainter(
-                            data = userData?.profilePhoto,
-                            builder = {
-                                crossfade(true)
-                                placeholder(R.drawable.ic_profile_default)
-                                error(R.drawable.ic_error)
-                            }
+                        val painter = rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(data = userData?.profilePhoto).apply(block = fun ImageRequest.Builder.() {
+                                    crossfade(true)
+                                    placeholder(R.drawable.ic_profile_default)
+                                    error(R.drawable.ic_error)
+                                }).build()
                         )
 
                         Image(
@@ -129,7 +130,7 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = userData?.location ?: "Indonesia",
+                    text = userData?.location ?: "No Country",
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
@@ -157,21 +158,21 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.SpaceAround,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = userData?.songsCount?.toString() ?: "135",
+                        Text(text = userData?.songsCount?.toString() ?: "-",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp)
                         Text(text = "SONGS", color = Color.Gray, fontSize = 12.sp)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = userData?.likedCount?.toString() ?: "32",
+                        Text(text = userData?.likedCount?.toString() ?: "-",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp)
                         Text(text = "LIKED", color = Color.Gray, fontSize = 12.sp)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = userData?.listenedCount?.toString() ?: "50",
+                        Text(text = userData?.listenedCount?.toString() ?: "-",
                             color = Color.White,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp)

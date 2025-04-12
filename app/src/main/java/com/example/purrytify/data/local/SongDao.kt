@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSong(song: SongEntity)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertSong(song: SongEntity): Long
 
     @Update
     suspend fun updateSong(song: SongEntity)
@@ -29,4 +29,13 @@ interface SongDao {
 
     @Query("UPDATE songs SET lastPlayed = :timestamp WHERE id = :songId")
     suspend fun updateLastPlayed(songId: Int, timestamp: Long)
+
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName")
+    fun getAllSongsCount(userName: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND isLiked = 1")
+    fun getLikedSongsCount(userName: String): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM songs WHERE username = :userName AND lastPlayed IS NOT NULL")
+    fun getPlayedSongsCount(userName: String): Flow<Int>;
 }

@@ -89,6 +89,8 @@ fun SongOptionsDialog(
                             painter = rememberAsyncImagePainter(
                                 ImageRequest.Builder(context)
                                     .data(Uri.parse(song.artworkUri))
+                                    .error(R.drawable.ic_artwork_placeholder)
+                                    .placeholder(R.drawable.ic_artwork_placeholder)
                                     .build()
                             ),
                             contentDescription = "Album Cover",

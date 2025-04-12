@@ -50,7 +50,7 @@ class AuthRepositoryImpl @Inject constructor(
                 android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE or android.util.Base64.NO_PADDING or android.util.Base64.NO_WRAP)
             )
             val json = org.json.JSONObject(payload)
-            json.optString("username", null.toString()) // atau "email" kalau itu yang dipakai
+            json.optString("username", null.toString())
         } catch (e: Exception) {
             null
         }
