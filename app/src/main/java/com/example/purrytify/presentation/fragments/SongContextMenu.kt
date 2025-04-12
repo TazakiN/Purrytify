@@ -27,6 +27,8 @@ fun SongContextMenu(
     onDelete: (Song) -> Unit,
     onToggleFavorite: (Song) -> Unit
 ) {
+    Log.d("QueueDebug", "SongContextMenu opened for song: ${song.title}")
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
@@ -58,6 +60,7 @@ fun SongContextMenu(
                     icon = Icons.Default.PlayArrow,
                     label = "Play",
                     onClick = {
+                        Log.d("QueueDebug", "Play clicked for song: ${song.title}")
                         onPlay(song)
                         onDismiss()
                     }
@@ -79,6 +82,7 @@ fun SongContextMenu(
                     icon = if (song.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     label = if (song.isLiked) "Remove from Liked Songs" else "Add to Liked Songs",
                     onClick = {
+                        Log.d("QueueDebug", "Toggle favorite clicked for song: ${song.title}")
                         onToggleFavorite(song)
                         onDismiss()
                     }
@@ -95,6 +99,7 @@ fun SongContextMenu(
                     icon = Icons.Default.Edit,
                     label = "Edit Song",
                     onClick = {
+                        Log.d("QueueDebug", "Edit clicked for song: ${song.title}")
                         onEdit(song)
                         onDismiss()
                     }
@@ -105,6 +110,7 @@ fun SongContextMenu(
                     icon = Icons.Default.Delete,
                     label = "Delete Song",
                     onClick = {
+                        Log.d("QueueDebug", "Delete clicked for song: ${song.title}")
                         onDelete(song)
                         onDismiss()
                     },

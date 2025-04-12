@@ -1,6 +1,7 @@
 package com.example.purrytify.presentation.fragments
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,6 +45,11 @@ fun MiniPlayer(
     val isPlaying by viewModel.isPlaying.collectAsState()
     val queue by viewModel.queue.collectAsState()
     val context = LocalContext.current
+
+    // Debug the queue indicator state when it changes
+    LaunchedEffect(queue) {
+        Log.d("QueueDebug", "MiniPlayer queue indicator - Queue size: ${queue.size}")
+    }
 
     if (currentSong == null) return // Don't show mini player if no song is playing
 
@@ -114,28 +121,37 @@ fun MiniPlayer(
 
                         // Show queue indicator if songs are in the queue
                         if (queue.isNotEmpty()) {
-                            BadgedBox(
-                                badge = {
-                                    Badge(
-                                        containerColor = Green,
-                                        contentColor = Color.Black
-                                    ) {
-                                        Text(
-                                            text = "${queue.size}",
-                                            style = MaterialTheme.typography.labelSmall
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.size(16.dp)
+                            // Use a simpler implementation that's more reliable
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .padding(end = 4.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.QueueMusic,
-                                    contentDescription = "Queue",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                                // Background circle for badge
+                                Surface(
+                                    modifier = Modifier.size(16.dp),
+                                    shape = androidx.compose.foundation.shape.CircleShape,
+                                    color = Green
+                                ) {
+                                    // Number badge
+                                    Text(
+                                        text = "${queue.size}",
+                                        color = Color.Black,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.wrapContentSize(Alignment.Center)
+                                    )
+                                }
                             }
-                            Spacer(modifier = Modifier.width(4.dp))
+
+                            // Queue icon
+                            Icon(
+                                imageVector = Icons.Default.QueueMusic,
+                                contentDescription = "Queue",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                     }
 

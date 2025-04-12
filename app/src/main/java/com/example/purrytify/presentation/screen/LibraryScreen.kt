@@ -1,3 +1,5 @@
+// Fixed section of LibraryScreen.kt to improve queue context menu functionality
+
 package com.example.purrytify.presentation.screen
 
 import android.view.LayoutInflater
@@ -20,9 +22,8 @@ import com.example.purrytify.presentation.fragments.DialogUpdateSong
 import com.example.purrytify.presentation.fragments.SongContextMenu
 import com.example.purrytify.presentation.viewmodel.LibraryViewModel
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
-import androidx.compose.runtime.rememberCoroutineScope
-import android.util.Log
 import kotlinx.coroutines.launch
+import android.util.Log
 
 @Composable
 fun LibraryScreen(
@@ -32,6 +33,7 @@ fun LibraryScreen(
     val context = LocalContext.current
     val allSongs by viewModel.allSongs.collectAsState()
     val queueSize by musicPlayerViewModel.queue.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     var showLikedOnly by remember { mutableStateOf(false) }
     var selectedSong by remember { mutableStateOf<Song?>(null) }
@@ -54,13 +56,21 @@ fun LibraryScreen(
                 Toast.makeText(context, "Playing: ${song.title}", Toast.LENGTH_SHORT).show()
             },
             onAddToQueue = { song ->
-                // Enhanced handler with coroutine scope for safer queue updates
-                val coroutineScope = rememberCoroutineScope()
                 coroutineScope.launch {
+                    // Debug before adding to queue
+                    Log.d("QueueDebug", "Before adding to queue: Queue size = ${queueSize.size}")
+
+                    // Add to queue
                     musicPlayerViewModel.addToQueue(song)
-                    // Log to help debug
-                    Log.d("QueueDebug", "Added to queue from LibraryScreen: ${song.title}. Queue size: ${queueSize.size}")
+
+                    // Show toast notification
                     Toast.makeText(context, "Added to queue: ${song.title}", Toast.LENGTH_SHORT).show()
+
+                    // Debug after adding to queue
+                    Log.d("QueueDebug", "After adding to queue: Expected size = ${queueSize.size + 1}")
+
+                    // Call debug helper
+                    musicPlayerViewModel.debugQueueState()
                 }
             },
             onEdit = { song ->
@@ -69,7 +79,6 @@ fun LibraryScreen(
                 }
             },
             onDelete = { song ->
-                // Check if the song is currently playing
                 if (musicPlayerViewModel.currentSong.value?.id == song.id) {
                     musicPlayerViewModel.deleteSong(song)
                 } else {
@@ -100,7 +109,6 @@ fun LibraryScreen(
                 songs = filteredSongs,
                 onItemClick = { song ->
                     try {
-                        // Use MusicPlayerViewModel instead of creating a new MediaPlayer
                         musicPlayerViewModel.playSong(song)
                         Toast.makeText(ctx, "Playing: ${song.title}", Toast.LENGTH_SHORT).show()
                         viewModel.updateLastPlayed(song.id)
@@ -113,6 +121,9 @@ fun LibraryScreen(
                     // Show context menu for the song
                     selectedSong = song
                     showContextMenu = true
+
+                    // Debug
+                    Log.d("QueueDebug", "Context menu opened for song: ${song.title}")
                 }
             )
 

@@ -1,18 +1,23 @@
+// Updated QueueScreen.kt - Using the same ViewModel instance
+
 package com.example.purrytify.presentation.screen
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,15 +26,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.text.style.TextAlign
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.purrytify.R
@@ -39,29 +39,29 @@ import com.example.purrytify.presentation.theme.Green
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.*
-import android.net.Uri
-import androidx.compose.runtime.LaunchedEffect
-import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QueueScreen(
     onBackPressed: () -> Unit,
-    viewModel: MusicPlayerViewModel = hiltViewModel()
+    // IMPORTANT: Use viewModel passed from parent, don't create new instance with hiltViewModel()
+    viewModel: MusicPlayerViewModel
 ) {
-    // Add debug logging when collecting the queue state
     val queue by viewModel.queue.collectAsState()
-
-    // Add logging to track queue state in this screen
-    LaunchedEffect(Unit) {
-        Log.d("QueueDebug", "QueueScreen composed. Queue size: ${queue.size}")
-    }
-
-    // Rest of the function remains the same
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Reorderable state setup for drag & drop
+    // Debug queue state when screen is composed
+    LaunchedEffect(Unit) {
+        Log.d("QueueDebug", "QueueScreen composing with queue size: ${queue.size}")
+        queue.forEachIndexed { index, song ->
+            Log.d("QueueDebug", "Queue item $index: ${song.title} (ID: ${song.id})")
+        }
+        // Call debug helper function to log detailed queue state
+        viewModel.debugQueueState()
+    }
+
+    // Setup reorderable state for drag & drop functionality
     val reorderableState = rememberReorderableLazyListState(
         onMove = { from, to ->
             viewModel.reorderQueue(from.index, to.index)
@@ -78,7 +78,7 @@ fun QueueScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Top bar
+            // Top bar with back button and clear queue option
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -101,7 +101,9 @@ fun QueueScreen(
 
                 IconButton(
                     onClick = {
-                        viewModel.clearQueue()
+                        coroutineScope.launch {
+                            viewModel.clearQueue()
+                        }
                     },
                     enabled = queue.isNotEmpty()
                 ) {
@@ -115,7 +117,7 @@ fun QueueScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Queue title and count
+            // Queue title with count badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -142,6 +144,7 @@ fun QueueScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Either show the queue or an empty state message
             if (queue.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -176,11 +179,7 @@ fun QueueScreen(
                     }
                 }
             } else {
-                // Queue list with drag-and-drop and logging to debug
-                LaunchedEffect(queue) {
-                    Log.d("QueueDebug", "Queue changed in QueueScreen. Contents: ${queue.map { it.title }}")
-                }
-
+                // Display queue with drag-and-drop reordering
                 LazyColumn(
                     state = reorderableState.listState,
                     modifier = Modifier
@@ -209,15 +208,25 @@ fun QueueScreen(
                                 QueueSongItem(
                                     song = song,
                                     onPlay = {
-                                        // Play this song and remove it and all previous items from queue
-                                        viewModel.playSong(song)
-                                        val newQueue = queue.drop(index + 1)
                                         coroutineScope.launch {
-                                            viewModel.clearQueue()
-                                            newQueue.forEach { viewModel.addToQueue(it) }
+                                            // Play this song and adjust queue
+                                            viewModel.playSong(song)
+
+                                            // Update queue to remove this song and all previous ones
+                                            if (index < queue.size - 1) {
+                                                val newQueue = queue.drop(index + 1)
+                                                viewModel.clearQueue()
+                                                newQueue.forEach { viewModel.addToQueue(it) }
+                                            } else {
+                                                viewModel.clearQueue()
+                                            }
                                         }
                                     },
-                                    onRemove = { viewModel.removeFromQueue(song) },
+                                    onRemove = {
+                                        coroutineScope.launch {
+                                            viewModel.removeFromQueue(song)
+                                        }
+                                    },
                                     dragHandle = {
                                         Icon(
                                             imageVector = Icons.Default.DragHandle,
@@ -254,7 +263,7 @@ fun QueueSongItem(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Drag handle
+        // Drag handle for reordering
         dragHandle()
 
         // Album artwork

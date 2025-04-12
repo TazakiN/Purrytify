@@ -1,6 +1,7 @@
 package com.example.purrytify
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -75,7 +76,18 @@ class MainActivity : AppCompatActivity() {
                 val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
                 val showFullPlayer by musicPlayerViewModel.showFullPlayer.collectAsStateWithLifecycle()
                 val showQueue by musicPlayerViewModel.showQueue.collectAsStateWithLifecycle()
+                val queueSize by musicPlayerViewModel.queue.collectAsStateWithLifecycle()
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
+
+                // For debugging queue functionality
+                LaunchedEffect(queueSize.size) {
+                    Log.d("QueueDebug", "Queue size changed in MainActivity: ${queueSize.size}")
+                    if (queueSize.isNotEmpty()) {
+                        queueSize.forEachIndexed { index, song ->
+                            Log.d("QueueDebug", "Queue item $index: ${song.title}")
+                        }
+                    }
+                }
 
                 // Add state for missing file song
                 val missingFileSong by musicPlayerViewModel.missingFileSong.collectAsStateWithLifecycle()
@@ -114,10 +126,20 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Show queue screen when requested
+                // Show queue screen when requested - improved with better navigation logic
                 LaunchedEffect(showQueue) {
                     if (showQueue) {
-                        navController.navigate(Screen.Queue.route)
+                        // Check if we're already on the queue screen to avoid navigation loops
+                        if (currentRoute != Screen.Queue.route) {
+                            Log.d("QueueDebug", "Navigating to Queue screen. Current queue size: ${queueSize.size}")
+                            navController.navigate(Screen.Queue.route)
+                        }
+                    } else {
+                        // If queue visibility is toggled off while on the queue screen, navigate back
+                        if (currentRoute == Screen.Queue.route) {
+                            Log.d("QueueDebug", "Queue visibility turned off, navigating back")
+                            navController.popBackStack()
+                        }
                     }
                 }
 
@@ -210,11 +232,13 @@ class MainActivity : AppCompatActivity() {
                                 )
                             }
                             composable(Screen.Queue.route) {
+                                // Pass the shared musicPlayerViewModel instance to QueueScreen
                                 QueueScreen(
                                     onBackPressed = {
                                         musicPlayerViewModel.toggleQueueVisibility()
                                         navController.popBackStack()
-                                    }
+                                    },
+                                    viewModel = musicPlayerViewModel  // Pass the existing ViewModel instance
                                 )
                             }
                         }

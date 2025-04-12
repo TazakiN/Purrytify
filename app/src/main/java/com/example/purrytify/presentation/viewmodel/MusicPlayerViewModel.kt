@@ -1,9 +1,9 @@
 package com.example.purrytify.presentation.viewmodel
 
-import android.util.Log
 import android.content.ContentResolver
 import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.purrytify.domain.model.Song
@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -75,6 +76,7 @@ class MusicPlayerViewModel @Inject constructor(
         viewModelScope.launch {
             songRepository.getAllSongs().collectLatest { songs ->
                 _allSongs.value = songs
+                Log.d("QueueDebug", "All songs loaded. Count: ${songs.size}")
 
                 // If a song is currently playing, update its data if it exists in the new list
                 _currentSong.value?.let { currentSong ->
@@ -86,6 +88,7 @@ class MusicPlayerViewModel @Inject constructor(
 
                 // Update any queued songs too
                 if (_queue.value.isNotEmpty()) {
+                    Log.d("QueueDebug", "Updating queue from loaded songs.")
                     val updatedQueue = _queue.value.map { queuedSong ->
                         songs.find { it.id == queuedSong.id } ?: queuedSong
                     }
@@ -97,46 +100,84 @@ class MusicPlayerViewModel @Inject constructor(
 
     fun addToQueue(song: Song) {
         viewModelScope.launch {
-            val currentQueue = _queue.value.toMutableList()
-            // Check if the song is already in the queue to avoid duplicates
-            if (!currentQueue.any { it.id == song.id }) {
-                currentQueue.add(song)
-                _queue.value = currentQueue
-
-                // Debug log to track queue operations
-                Log.d("QueueDebug", "Added song to queue: ${song.title}. Queue size now: ${_queue.value.size}")
+            try {
+                val currentQueue = _queue.value.toMutableList()
+                // Check if the song is already in the queue to avoid duplicates
+                if (!currentQueue.any { it.id == song.id }) {
+                    currentQueue.add(song)
+                    _queue.value = currentQueue
+                    Log.d("QueueDebug", "Added song to queue: ${song.title}. Queue size now: ${currentQueue.size}")
+                } else {
+                    Log.d("QueueDebug", "Song already in queue, not adding again: ${song.title}")
+                }
+            } catch (e: Exception) {
+                Log.e("QueueDebug", "Error adding song to queue: ${e.message}", e)
             }
         }
     }
 
     fun removeFromQueue(song: Song) {
-        val currentQueue = _queue.value.toMutableList()
-        currentQueue.removeAll { it.id == song.id }
-        _queue.value = currentQueue
-        Log.d("QueueDebug", "Removed song from queue: ${song.title}. Queue size now: ${_queue.value.size}")
+        viewModelScope.launch {
+            try {
+                val currentQueue = _queue.value.toMutableList()
+                val initialSize = currentQueue.size
+                currentQueue.removeAll { it.id == song.id }
+                _queue.value = currentQueue
+                Log.d("QueueDebug", "Removed song from queue: ${song.title}. Queue size: ${initialSize} -> ${currentQueue.size}")
+            } catch (e: Exception) {
+                Log.e("QueueDebug", "Error removing song from queue: ${e.message}", e)
+            }
+        }
     }
 
     fun clearQueue() {
-        _queue.value = emptyList()
-        Log.d("QueueDebug", "Queue cleared. Size now: 0")
+        viewModelScope.launch {
+            try {
+                _queue.value = emptyList()
+                Log.d("QueueDebug", "Queue cleared. Size now: 0")
+            } catch (e: Exception) {
+                Log.e("QueueDebug", "Error clearing queue: ${e.message}", e)
+            }
+        }
     }
 
     fun reorderQueue(fromPosition: Int, toPosition: Int) {
-        if (fromPosition < 0 || toPosition < 0 ||
-            fromPosition >= _queue.value.size ||
-            toPosition >= _queue.value.size) {
-            return
-        }
+        viewModelScope.launch {
+            try {
+                if (fromPosition < 0 || toPosition < 0 ||
+                    fromPosition >= _queue.value.size ||
+                    toPosition >= _queue.value.size) {
+                    Log.w("QueueDebug", "Invalid reorder positions. From: $fromPosition, To: $toPosition, Size: ${_queue.value.size}")
+                    return@launch
+                }
 
-        val currentQueue = _queue.value.toMutableList()
-        val song = currentQueue.removeAt(fromPosition)
-        currentQueue.add(toPosition, song)
-        _queue.value = currentQueue
+                val currentQueue = _queue.value.toMutableList()
+                val movedSong = currentQueue.removeAt(fromPosition)
+                currentQueue.add(toPosition, movedSong)
+                _queue.value = currentQueue
+                Log.d("QueueDebug", "Reordered queue. Moved song: ${movedSong.title} from $fromPosition to $toPosition")
+            } catch (e: Exception) {
+                Log.e("QueueDebug", "Error reordering queue: ${e.message}", e)
+            }
+        }
     }
 
     fun toggleQueueVisibility() {
+        // First debug the queue state before toggling visibility
+        Log.d("QueueDebug", "Before toggle - Queue size: ${_queue.value.size}, Visibility: ${_showQueue.value}")
+
+        // Toggle visibility state
         _showQueue.value = !_showQueue.value
-        Log.d("QueueDebug", "Queue visibility toggled. Visible: ${_showQueue.value}. Current queue size: ${_queue.value.size}")
+
+        // Debug the queue state after toggling visibility
+        Log.d("QueueDebug", "After toggle - Queue size: ${_queue.value.size}, Visibility: ${_showQueue.value}")
+
+        // Print the queue contents for debugging
+        if (_queue.value.isNotEmpty()) {
+            _queue.value.forEachIndexed { index, song ->
+                Log.d("QueueDebug", "Queue item $index: ${song.title} (ID: ${song.id})")
+            }
+        }
     }
 
     fun playSong(song: Song) {
@@ -178,27 +219,22 @@ class MusicPlayerViewModel @Inject constructor(
                         // Update last played timestamp in the database
                         viewModelScope.launch {
                             updateLastPlayedUseCase(song.id)
+                            Log.d("QueueDebug", "Started playing song: ${song.title}")
                         }
                     }
                 }
             } catch (e: Exception) {
                 // File is missing or inaccessible
                 _missingFileSong.value = song
+                Log.e("QueueDebug", "File missing or inaccessible for song: ${song.title}", e)
 
                 // Reset these for safety
                 _currentSong.value = null
                 _isPlaying.value = false
-
-                e.printStackTrace()
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            // Handle other errors
+            Log.e("QueueDebug", "Error playing song: ${e.message}", e)
         }
-    }
-
-    fun resetMissingFileState() {
-        _missingFileSong.value = null
     }
 
     fun togglePlayPause() {
@@ -207,10 +243,12 @@ class MusicPlayerViewModel @Inject constructor(
                 it.pause()
                 _isPlaying.value = false
                 stopProgressTracking()
+                Log.d("QueueDebug", "Playback paused")
             } else {
                 it.start()
                 _isPlaying.value = true
                 startProgressTracking()
+                Log.d("QueueDebug", "Playback started")
             }
         }
     }
@@ -227,11 +265,13 @@ class MusicPlayerViewModel @Inject constructor(
         viewModelScope.launch {
             updateSongUseCase(updatedSong)
             _currentSong.value = updatedSong
+            Log.d("QueueDebug", "Toggled favorite for song: ${song.title}, isLiked: ${updatedSong.isLiked}")
         }
     }
 
     fun togglePlayerView() {
         _showFullPlayer.value = !_showFullPlayer.value
+        Log.d("QueueDebug", "Player view toggled. Full player visible: ${_showFullPlayer.value}")
     }
 
     fun toggleOptionsDialog() {
@@ -245,13 +285,20 @@ class MusicPlayerViewModel @Inject constructor(
                 if (_currentSong.value?.id == song.id) {
                     releaseMediaPlayer()
                     _currentSong.value = null
+                    Log.d("QueueDebug", "Currently playing song deleted and playback stopped")
                 }
 
                 // Remove from queue if present
-                removeFromQueue(song)
+                val initialQueueSize = _queue.value.size
+                val newQueue = _queue.value.filter { it.id != song.id }
+                if (newQueue.size != initialQueueSize) {
+                    _queue.value = newQueue
+                    Log.d("QueueDebug", "Deleted song removed from queue. Queue size: ${initialQueueSize} -> ${newQueue.size}")
+                }
 
                 // Delete the song from the repository
                 songRepository.deleteSong(song)
+                Log.d("QueueDebug", "Song deleted from repository: ${song.title}")
 
                 // Close dialog after deletion
                 _showOptionsDialog.value = false
@@ -261,8 +308,7 @@ class MusicPlayerViewModel @Inject constructor(
                     _missingFileSong.value = null
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                // Handle error
+                Log.e("QueueDebug", "Error deleting song: ${e.message}", e)
             }
         }
     }
@@ -270,6 +316,7 @@ class MusicPlayerViewModel @Inject constructor(
     fun updateCurrentSongIfMatches(updatedSong: Song) {
         if (_currentSong.value?.id == updatedSong.id) {
             _currentSong.value = updatedSong
+            Log.d("QueueDebug", "Updated current song: ${updatedSong.title}")
         }
 
         // Also update in queue if present
@@ -278,6 +325,7 @@ class MusicPlayerViewModel @Inject constructor(
                 if (it.id == updatedSong.id) updatedSong else it
             }
             _queue.value = updatedQueue
+            Log.d("QueueDebug", "Updated song in queue: ${updatedSong.title}")
         }
     }
 
@@ -286,13 +334,15 @@ class MusicPlayerViewModel @Inject constructor(
         if (_queue.value.isNotEmpty()) {
             // Play the first song in the queue
             val nextSong = _queue.value.first()
-            playSong(nextSong)
+            Log.d("QueueDebug", "Playing next song from queue: ${nextSong.title}")
 
-            // Remove the played song from the queue
+            // Remove the played song from the queue before playing it
+            // to avoid potential race conditions
             val updatedQueue = _queue.value.toMutableList()
             updatedQueue.removeAt(0)
             _queue.value = updatedQueue
 
+            playSong(nextSong)
             return
         }
 
@@ -303,10 +353,12 @@ class MusicPlayerViewModel @Inject constructor(
         if (currentSongIndex != -1 && currentSongIndex < _allSongs.value.size - 1) {
             // There is a next song, play it
             val nextSong = _allSongs.value[currentSongIndex + 1]
+            Log.d("QueueDebug", "Playing next song in sequence: ${nextSong.title}")
             playSong(nextSong)
         } else if (currentSongIndex != -1 && _allSongs.value.isNotEmpty()) {
             // We're at the end, loop back to the first song
             val firstSong = _allSongs.value[0]
+            Log.d("QueueDebug", "Looping back to first song: ${firstSong.title}")
             playSong(firstSong)
         }
     }
@@ -320,10 +372,12 @@ class MusicPlayerViewModel @Inject constructor(
         if (currentSongIndex > 0) {
             // There is a previous song, play it
             val previousSong = _allSongs.value[currentSongIndex - 1]
+            Log.d("QueueDebug", "Playing previous song: ${previousSong.title}")
             playSong(previousSong)
         } else if (_allSongs.value.isNotEmpty()) {
             // We're at the beginning, loop back to the last song
             val lastSong = _allSongs.value.last()
+            Log.d("QueueDebug", "Looping to last song: ${lastSong.title}")
             playSong(lastSong)
         }
     }
@@ -338,6 +392,7 @@ class MusicPlayerViewModel @Inject constructor(
                     }
                     delay(1000) // Update every second
                 } catch (e: Exception) {
+                    Log.e("QueueDebug", "Error tracking progress: ${e.message}", e)
                     break
                 }
             }
@@ -351,17 +406,38 @@ class MusicPlayerViewModel @Inject constructor(
 
     private fun releaseMediaPlayer() {
         mediaPlayer?.apply {
-            if (isPlaying) {
-                stop()
+            try {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
+                Log.d("QueueDebug", "MediaPlayer released")
+            } catch (e: Exception) {
+                Log.e("QueueDebug", "Error releasing MediaPlayer: ${e.message}", e)
             }
-            release()
         }
         mediaPlayer = null
         stopProgressTracking()
     }
 
+    fun resetMissingFileState() {
+        _missingFileSong.value = null
+    }
+
+    // Debug helper function to log the current queue state
+    fun debugQueueState() {
+        Log.d("QueueDebug", "==== QUEUE STATE DEBUG ====")
+        Log.d("QueueDebug", "Current queue size: ${_queue.value.size}")
+        Log.d("QueueDebug", "Queue contents: ${_queue.value.map { it.title }}")
+        Log.d("QueueDebug", "Queue visibility: ${_showQueue.value}")
+        Log.d("QueueDebug", "Current song: ${_currentSong.value?.title}")
+        Log.d("QueueDebug", "Is playing: ${_isPlaying.value}")
+        Log.d("QueueDebug", "==========================")
+    }
+
     override fun onCleared() {
         super.onCleared()
         releaseMediaPlayer()
+        Log.d("QueueDebug", "MusicPlayerViewModel cleared")
     }
 }
