@@ -73,7 +73,6 @@ fun QueueScreen(
         queue.forEachIndexed { index, song ->
             Log.d("QueueDebug", "Queue item $index: ${song.title} (ID: ${song.id})")
         }
-        viewModel.debugQueueState()
     }
 
     val reorderableState = rememberReorderableLazyListState(

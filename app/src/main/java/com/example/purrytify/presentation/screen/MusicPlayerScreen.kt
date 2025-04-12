@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Badge
@@ -72,6 +73,7 @@ fun MusicPlayerScreen(
     val totalDuration by viewModel.totalDuration.collectAsState()
     val showOptionsDialog by viewModel.showOptionsDialog.collectAsState()
     val queue by viewModel.queue.collectAsState()
+    val isShuffled by viewModel.isShuffled.collectAsState()
     val context = LocalContext.current
 
     if (currentSong == null) {
@@ -318,12 +320,24 @@ fun MusicPlayerScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Playback controls
+            // Playback controls with shuffle button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(
+                    onClick = { viewModel.toggleShuffle() },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Shuffle,
+                        contentDescription = "Shuffle",
+                        tint = if (isShuffled) Green else Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
                 IconButton(
                     onClick = { viewModel.playPreviousSong() },
                     modifier = Modifier.size(48.dp)
@@ -363,6 +377,9 @@ fun MusicPlayerScreen(
                         modifier = Modifier.size(32.dp)
                     )
                 }
+
+                // Spacer to balance if needed, or you can add another control
+                Spacer(modifier = Modifier.size(48.dp))
             }
 
             Spacer(modifier = Modifier.weight(1f))
