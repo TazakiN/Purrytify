@@ -29,12 +29,16 @@ class LibraryViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    fun addSong(song: Song) {
+    fun addSong(song: Song, onResult: (Result<Unit>) -> Unit) {
         viewModelScope.launch {
             try {
                 addSongUseCase(song)
+                onResult(Result.success(Unit))
+            } catch (e: IllegalArgumentException) {
+                onResult(Result.failure(e))
             } catch (e: Exception) {
                 e.printStackTrace()
+                onResult(Result.failure(e))
             }
         }
     }

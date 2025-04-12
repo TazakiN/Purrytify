@@ -2,8 +2,13 @@ package com.example.purrytify.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Index
 
-@Entity(tableName = "songs")
+
+@Entity(
+    tableName = "songs",
+    indices = [Index(value = ["username", "title", "artist"], unique = true)]
+)
 data class SongEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,

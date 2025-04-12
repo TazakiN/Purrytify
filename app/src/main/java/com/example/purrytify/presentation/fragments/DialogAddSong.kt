@@ -34,6 +34,7 @@ class DialogAddSong : BottomSheetDialogFragment() {
     private var songUri: Uri? = null
     private var duration: Long = 0L
     private var selectedArtworkUri: Uri? = null
+    private var artworkBitmap: Bitmap? = null
 
     private val pickAudio = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
@@ -62,23 +63,21 @@ class DialogAddSong : BottomSheetDialogFragment() {
 
                     // Extract embedded album art
                     val artBytes = mmr.embeddedPicture
-                    if (artBytes != null) {
-                        val bitmap = BitmapFactory.decodeByteArray(artBytes, 0, artBytes.size)
-                        binding.imgArtworkPreview.setImageBitmap(bitmap)
-                        binding.txtArtworkLabel.text = "Embedded Cover Art"
+                    val decodedBitmap = artBytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
 
-                        // Save to internal storage as file://
-                        val savedUri = saveBitmapToInternalStorage(bitmap, title ?: "artwork_${System.currentTimeMillis()}")
-                        selectedArtworkUri = savedUri
+                    if (decodedBitmap != null) {
+                        artworkBitmap = decodedBitmap
+                        binding.imgArtworkPreview.setImageBitmap(decodedBitmap)
+                        binding.txtArtworkLabel.text = "Embedded Cover Art"
                     } else {
+                        artworkBitmap = null
                         binding.imgArtworkPreview.setImageResource(R.drawable.ic_artwork_placeholder)
-                        binding.txtArtworkLabel.text = "No Artwork"
-                        selectedArtworkUri = null
+                        binding.txtArtworkLabel.text = "No Artwork or corrupted"
                     }
 
                     mmr.release()
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Gagal membaca metadata lagu", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Failed to read song metadata", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
                 }
             }
@@ -129,24 +128,44 @@ class DialogAddSong : BottomSheetDialogFragment() {
             Log.d("ArtworkURI", "Saved artwork URI: $artwork")
 
             if (title.isNotEmpty() && artist.isNotEmpty() && uri != null && duration > 0) {
+                // Save the artwork bitmap only when the "Save" button is clicked
+                val artworkUriToSave = saveArtworkBitmapIfNeeded(artworkBitmap, title)
+
                 viewModel.addSong(
                     Song(
                         id = 0,
                         title = title,
                         artist = artist,
-                        artworkUri = artwork,
+                        artworkUri = artworkUriToSave,
                         songUri = uri,
                         duration = duration,
                         isLiked = false,
                         username = "You"
                     )
-                )
-                Toast.makeText(context, "Lagu berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
-                dismiss()
+                ) { result ->
+                    result.onSuccess {
+                        Toast.makeText(context, "Song successfully added!", Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }.onFailure { exception ->
+                        if (exception is IllegalArgumentException) {
+                            Toast.makeText(context, exception.message ?: "A song with the same title and artist already exists!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, "Failed to add the song!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             } else {
-                Toast.makeText(context, "Lengkapi semua data terlebih dahulu!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Please complete all the fields!", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun saveArtworkBitmapIfNeeded(bitmap: Bitmap?, title: String): String? {
+        if (bitmap != null) {
+            // Save the artwork bitmap to internal storage if needed
+            return saveBitmapToInternalStorage(bitmap, title)
+        }
+        return null
     }
 
     private fun getFileNameFromUri(uri: Uri): String {
@@ -163,15 +182,20 @@ class DialogAddSong : BottomSheetDialogFragment() {
         return result ?: uri.lastPathSegment ?: "Unknown"
     }
 
-    private fun saveBitmapToInternalStorage(bitmap: Bitmap, fileName: String): Uri? {
+    private fun saveBitmapToInternalStorage(bitmap: Bitmap, title: String): String? {
         return try {
             val context = requireContext()
-            val file = File(context.filesDir, "$fileName.jpg")
+
+            // Create a unique filename using the current time in milliseconds
+            val uniqueFileName = "${System.currentTimeMillis()}_${title.takeIf { it.isNotEmpty() } ?: "artwork"}.jpg"
+
+            val file = File(context.filesDir, uniqueFileName)
             val out = FileOutputStream(file)
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
             out.flush()
             out.close()
-            Uri.fromFile(file) // Use file:// URI
+
+            file.absolutePath // Return the unique file path
         } catch (e: Exception) {
             e.printStackTrace()
             null

@@ -35,7 +35,10 @@ class SongRepositoryImpl @Inject constructor(
     override suspend fun insertSong(song: Song) {
         val username = getCurrentUsername()
         if (username != null) {
-            dao.insertSong(song.copy(username = username).toEntity())
+            val result = dao.insertSong(song.copy(username = username).toEntity())
+            if (result == -1L) {
+                throw IllegalArgumentException("Song with the same title and artist already exists.")
+            }
         } else {
             throw IllegalStateException("User must be logged in to add a song.")
         }
