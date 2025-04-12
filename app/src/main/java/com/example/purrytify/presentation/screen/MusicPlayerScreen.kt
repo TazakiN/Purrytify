@@ -133,6 +133,8 @@ fun MusicPlayerScreen(
                         painter = rememberAsyncImagePainter(
                             ImageRequest.Builder(context)
                                 .data(Uri.parse(currentSong?.artworkUri))
+                                .error(R.drawable.ic_artwork_placeholder)
+                                .placeholder(R.drawable.ic_artwork_placeholder)
                                 .build()
                         ),
                         contentDescription = "Album Cover",

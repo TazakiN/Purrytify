@@ -130,7 +130,10 @@ class MusicPlayerViewModel @Inject constructor(
 
     fun toggleFavorite() {
         val song = _currentSong.value ?: return
-        val updatedSong = song.copy(isLiked = !song.isLiked)
+        val updatedSong = song.copy(
+            isLiked = !song.isLiked,
+            lastPlayed = song.lastPlayed
+        )
 
         viewModelScope.launch {
             updateSongUseCase(updatedSong)
