@@ -76,7 +76,7 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 |            Queue           | 13522004 |
 |           Shuffle          | 13522032 |
 |           Repeat           | 13522004 |
-|            OWASP           |          |
+|            OWASP           | 13522114 |
 |           Search           | 13522114 |
 
 ## Jumlah Jam Persiapan dan Pengerjaan
@@ -90,5 +90,138 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 * **13522114 | Muhammad Dava Fathurrahman:**
   * Persiapan: 10 jam
   * Pengerjaan: 20 jam
+
+---
+
+## Analisis Keamanan Aplikasi Berdasarkan OWASP (2024)
+
+- **M4: Insufficient Input/Output Validation**
+- **M8: Security Misconfiguration**
+- **M9: Insecure Data Storage**
+
+---
+
+### 1. Validasi Input Login (M4)
+
+Kami melakukan validasi input email secara lokal sebelum dikirim ke server untuk mencegah input tidak valid dan potensi eksploitasi.
+
+### Sebelum:
+
+```kotlin
+fun login(email: String, password: String) {
+    viewModelScope.launch {
+        _isLoading.value = true
+        val result = loginUseCase(email, password)
+        _loginResult.value = result
+        _isLoading.value = false
+
+        if (result.isSuccess) {
+            tokenRefreshService.start()
+        }
+    }
+}
+```
+
+### Sesudah:
+```kotlin
+fun login(email: String, password: String) {
+    if (!isValidEmail(email)) return
+    if (password.isBlank()) return
+
+    viewModelScope.launch {
+        _isLoading.value = true
+        val result = loginUseCase(email, password)
+        _loginResult.value = result
+        _isLoading.value = false
+
+        if (result.isSuccess) {
+            tokenRefreshService.start()
+        }
+    }
+}
+
+private fun isValidEmail(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+}
+```
+
+---
+
+### 2. Keamanan Database (M9)
+
+Jika perangkat di-root, Room Database dapat diakses melalui path:
+
+```
+/data/data/com.example.purrytify/databases
+```
+
+![RoomDB](/screenshots/RoomDBLocation.png)
+
+Saat ini, database **tidak menyimpan data sensitif**, sehingga **belum diperlukan enkripsi**. Jika di masa depan menyimpan data penting, enkripsi akan dipertimbangkan.
+
+---
+
+### 3. Perlindungan dari SQL Injection (M4)
+
+Semua query menggunakan **parameter binding**, bukan konkatenasi string. Ini membuat database aman dari SQL Injection.
+
+### Contoh:
+```kotlin
+@Query("UPDATE songs SET lastPlayed = :timestamp WHERE id = :songId")
+suspend fun updateLastPlayed(songId: Int, timestamp: Long)
+```
+
+---
+
+### 4. Keamanan Akses File Eksternal (M8)
+
+Pengguna dapat memilih gambar dari storage eksternal, dan kami memberikan fallback image jika gambar rusak atau tidak ditemukan.
+
+### Sebelum:
+```kotlin
+rememberAsyncImagePainter(
+    ImageRequest.Builder(context)
+        .data(Uri.parse(currentSong?.artworkUri))
+        .build()
+)
+```
+
+### Sesudah:
+```kotlin
+rememberAsyncImagePainter(
+    ImageRequest.Builder(context)
+        .data(currentSong?.artworkUri?.toUri())
+        .error(R.drawable.ic_artwork_placeholder)
+        .placeholder(R.drawable.ic_artwork_placeholder)
+        .build()
+)
+```
+
+---
+
+### 5. Sanitasi Path Gambar Profil (M8 - Path Traversal)
+
+Jika nilai `profilePhoto` mengandung karakter berbahaya seperti `../`, maka bisa terjadi Path Traversal.
+
+### Sebelum:
+```kotlin
+profilePhoto = RetrofitClient.profilePictureUrlBuilder(profileResponse.profilePhoto)
+```
+
+### Sesudah:
+```kotlin
+profilePhoto = sanitizeProfilePhoto(profileResponse.profilePhoto)
+
+private fun sanitizeProfilePhoto(photoPath: String?): String {
+    if (photoPath.isNullOrBlank()) return ""
+
+    val sanitizedPath = photoPath
+        .replace(Regex("[.]{2,}"), "") // Hapus ".."
+        // .replace(Regex("[\\/]+"), "") // Hapus slash
+        // .replace(Regex("[^a-zA-Z0-9_.-]"), "") // Karakter yang diperbolehkan
+
+    return RetrofitClient.profilePictureUrlBuilder(sanitizedPath)
+}
+```
 
 ---
