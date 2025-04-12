@@ -2,7 +2,7 @@ package com.example.purrytify.presentation.viewmodel
 
 import android.content.ContentResolver
 import android.media.MediaPlayer
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.purrytify.domain.model.Song
@@ -16,7 +16,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -74,7 +73,7 @@ class MusicPlayerViewModel @Inject constructor(
 
             // Create new MediaPlayer
             mediaPlayer = MediaPlayer().apply {
-                val uri = Uri.parse(song.songUri)
+                val uri = song.songUri.toUri()
                 val afd = contentResolver.openAssetFileDescriptor(uri, "r")
                 if (afd != null) {
                     setDataSource(afd.fileDescriptor)
@@ -82,7 +81,8 @@ class MusicPlayerViewModel @Inject constructor(
                     prepare()
 
                     // Update song info
-                    _currentSong.value = song
+                    val updatedSong = song.copy(lastPlayed = System.currentTimeMillis())
+                    _currentSong.value = updatedSong
                     _totalDuration.value = duration / 1000 // Convert to seconds
 
                     // Start playing and update state
