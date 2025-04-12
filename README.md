@@ -2,7 +2,7 @@
 
 ## Deskripsi Aplikasi
 
-Purrytify adalah aplikasi yang memungkinkan pengguna untuk dengan mudah memutar musik dan menambahkan lagu-lagu baru ke dalam koleksi mereka. Aplikasi ini dibangun menggunakan bahasa pemrograman [Kotlin](https://kotlinlang.org/) dengan arsitektur [MVVM *(Model-View-ViewModel*)](https://medium.com/@MuhammadYaumilRamadhani/architecture-pattern-mvvm-android-c48c9d77fccf) untuk memisahkan logika bisnis dari tampilan. Selain itu, Purrytify dilengkapi dengan berbagai fitur seperti pemutaran lagu yang canggih, pengelolaan daftar lagu yang dimiliki, ~~antrian, pengulangan, acak~~, dan pencarian lagu. Pengguna juga dapat menyimpan dan mengelola lagu-lagu yang disukai, dengan fitur yang memungkinkan mereka menandai lagu favorit agar lebih mudah ditemukan kapan saja.
+Purrytify adalah aplikasi yang memungkinkan pengguna untuk dengan mudah memutar musik dan menambahkan lagu-lagu baru ke dalam koleksi mereka. Aplikasi ini dibangun menggunakan bahasa pemrograman [Kotlin](https://kotlinlang.org/) dengan arsitektur [MVVM *(Model-View-ViewModel*)](https://medium.com/@MuhammadYaumilRamadhani/architecture-pattern-mvvm-android-c48c9d77fccf) untuk memisahkan logika bisnis dari tampilan. Selain itu, Purrytify dilengkapi dengan berbagai fitur seperti pemutaran lagu yang canggih, pengelolaan daftar lagu yang dimiliki, *queue*, *shuffle*, dan pencarian lagu. Pengguna juga dapat menyimpan dan mengelola lagu-lagu yang disukai, dengan fitur yang memungkinkan mereka menandai lagu favorit agar lebih mudah ditemukan kapan saja.
 
 ## Library yang Digunakan
 
@@ -75,7 +75,6 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 |       Network Sensing      | 13522032 |
 |            Queue           | 13522004 |
 |           Shuffle          | 13522032 |
-|           Repeat           | 13522004 |
 |            OWASP           | 13522114 |
 |           Search           | 13522114 |
 
@@ -83,10 +82,10 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 
 * **13522004 | Eduardus Alvito Kristiadi:**
   * Persiapan: 10 jam
-  * Pengerjaan: 20 jam
+  * Pengerjaan: 35 jam
 * **13522032 | Tazkia Nizami:**
   * Persiapan: 12 jam
-  * Pengerjaan: 40 jam
+  * Pengerjaan: 41 jam
 * **13522114 | Muhammad Dava Fathurrahman:**
   * Persiapan: 10 jam
   * Pengerjaan: 20 jam
