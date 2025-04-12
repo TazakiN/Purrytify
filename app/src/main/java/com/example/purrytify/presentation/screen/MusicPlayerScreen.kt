@@ -1,6 +1,7 @@
 package com.example.purrytify.presentation.screen
 
 import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.purrytify.R
+import com.example.purrytify.domain.model.Song
+import com.example.purrytify.presentation.fragments.DialogUpdateSong
+import com.example.purrytify.presentation.fragments.SongOptionsDialog
 import com.example.purrytify.presentation.theme.Black
 import com.example.purrytify.presentation.theme.Green
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
@@ -37,6 +41,7 @@ fun MusicPlayerScreen(
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val totalDuration by viewModel.totalDuration.collectAsState()
+    val showOptionsDialog by viewModel.showOptionsDialog.collectAsState()
     val context = LocalContext.current
 
     if (currentSong == null) {
@@ -52,6 +57,25 @@ fun MusicPlayerScreen(
             )
         }
         return
+    }
+
+    if (showOptionsDialog && currentSong != null) {
+        SongOptionsDialog(
+            song = currentSong!!,
+            onDismiss = { viewModel.toggleOptionsDialog() },
+            onEditClick = { song ->
+                viewModel.toggleOptionsDialog() // Close dialog
+
+                // Show edit dialog
+                (context as? AppCompatActivity)?.let {
+                    DialogUpdateSong(song).show(it.supportFragmentManager, "UpdateSongDialog")
+                }
+            },
+            onDeleteClick = { song ->
+                viewModel.deleteSong(song)
+                onBackPressed() // Go back after deleting
+            }
+        )
     }
 
     Box(
@@ -85,7 +109,7 @@ fun MusicPlayerScreen(
                     color = Color.White
                 )
 
-                IconButton(onClick = { /* Show options menu */ }) {
+                IconButton(onClick = { viewModel.toggleOptionsDialog() }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Options",
