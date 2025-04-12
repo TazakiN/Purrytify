@@ -11,7 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import com.example.purrytify.databinding.DialogAddSongBinding
 import com.example.purrytify.domain.model.Song
-import com.example.purrytify.presentation.viewmodel.LibraryViewModel
+import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
@@ -19,7 +19,7 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
     private var _binding: DialogAddSongBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: LibraryViewModel by viewModels(ownerProducer = { requireActivity() })
+    private val viewModel: MusicPlayerViewModel by viewModels(ownerProducer = { requireActivity() })
 
     private var selectedArtworkUri: Uri? = null
 
@@ -38,7 +38,7 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
         selectedArtworkUri = song.artworkUri?.let { Uri.parse(it) }
         selectedArtworkUri?.let { binding.imgArtworkPreview.setImageURI(it) }
 
-        binding.txtSelectedFileName.text = "Tidak bisa mengubah audio"
+        binding.txtSelectedFileName.text = "Audio file cannot be changed"
         binding.boxSong.isEnabled = false
         binding.boxSong.alpha = 0.5f
 
@@ -59,10 +59,12 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
                     artworkUri = artwork
                 )
                 viewModel.updateSong(updatedSong)
-                Toast.makeText(context, "Lagu berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+                viewModel.refreshCurrentSong(updatedSong)
+
+                Toast.makeText(context, "Song updated successfully!", Toast.LENGTH_SHORT).show()
                 dismiss()
             } else {
-                Toast.makeText(context, "Judul dan artis tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Title and artist must not be empty", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -73,12 +75,30 @@ class DialogUpdateSong(private val song: Song) : BottomSheetDialogFragment() {
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let {
-            requireContext().contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            selectedArtworkUri = it
-            binding.imgArtworkPreview.setImageURI(it)
-            binding.txtArtworkLabel.text = "Photo Selected"
+            try {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+
+                val inputStream = requireContext().contentResolver.openInputStream(it)
+                val decodedBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+
+                if (decodedBitmap != null) {
+                    selectedArtworkUri = it
+                    binding.imgArtworkPreview.setImageBitmap(decodedBitmap)
+                    binding.txtArtworkLabel.text = "Photo Selected"
+                } else {
+                    Toast.makeText(context, "Selected image is corrupted or unsupported.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to load selected image.", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

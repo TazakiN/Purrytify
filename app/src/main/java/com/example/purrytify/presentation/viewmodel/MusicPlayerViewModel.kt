@@ -232,6 +232,23 @@ class MusicPlayerViewModel @Inject constructor(
         stopProgressTracking()
     }
 
+    fun updateSong(song: Song) {
+        viewModelScope.launch {
+            try {
+                updateSongUseCase(song)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun refreshCurrentSong(updatedSong: Song) {
+        val current = _currentSong.value
+        if (current?.id == updatedSong.id) {
+            _currentSong.value = updatedSong
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         releaseMediaPlayer()

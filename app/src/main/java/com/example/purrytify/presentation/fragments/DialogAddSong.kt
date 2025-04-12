@@ -95,10 +95,24 @@ class DialogAddSong : BottomSheetDialogFragment() {
                 it,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            selectedArtworkUri = it
-            artworkBitmap = null // clear embedded image
-            binding.imgArtworkPreview.setImageURI(it)
-            binding.txtArtworkLabel.text = "Photo Selected"
+
+            try {
+                val inputStream = requireContext().contentResolver.openInputStream(it)
+                val decodedBitmap = BitmapFactory.decodeStream(inputStream)
+                inputStream?.close()
+
+                if (decodedBitmap != null) {
+                    selectedArtworkUri = it
+                    artworkBitmap = null // clear embedded image
+                    binding.imgArtworkPreview.setImageBitmap(decodedBitmap)
+                    binding.txtArtworkLabel.text = "Photo Selected"
+                } else {
+                    Toast.makeText(context, "Selected image is corrupted or unsupported.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to load selected image.", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
         }
     }
 
