@@ -199,7 +199,7 @@ rememberAsyncImagePainter(
 
 ---
 
-### Sanitasi Path Gambar Profil (M8 - Path Traversal)
+### 5. Sanitasi Path Gambar Profil (M8 - Path Traversal)
 
 Jika nilai `profilePhoto` mengandung karakter berbahaya seperti `../`, maka bisa terjadi Path Traversal.
 
