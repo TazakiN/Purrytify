@@ -50,7 +50,16 @@ Berikut adalah library yang digunakan dalam pengembangan aplikasi ini:
 
 ## Screenshot Aplikasi
 
-ss disini
+| Keterangan | Gambar |
+|:----------:|:------:|
+| Login | ![Login](/screenshots/LoginScreen.png) |
+| Home | ![Home](/screenshots/HomeScreen.jpg) |
+| Library + Mini Player | ![Library](/screenshots/LibraryScreen+MiniPlayer.jpg) |
+| Profile | ![Profile](/screenshots/ProfileScreen.jpg) |
+| Music Player | ![Music Player](/screenshots/MusicPlayer.jpg) |
+| Add New Music | ![Add New Music (empty)](/screenshots/EmptyAddSong.jpg) ![Add New Music](/screenshots/AddNewSong.jpg)|
+| Music Option | ![Edit Music](/screenshots/MusicOption.jpg) |
+| Edit Music Info | ![Edit Music](/screenshots/EditSong.jpg) |
 
 ## Pembagian Kerja Anggota Kelompok
 
