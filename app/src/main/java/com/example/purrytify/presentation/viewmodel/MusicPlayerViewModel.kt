@@ -182,13 +182,6 @@ class MusicPlayerViewModel @Inject constructor(
         }
     }
 
-//    fun setQueueVisibility(visible: Boolean) {
-//        if (_showQueue.value != visible) {
-//            _showQueue.value = visible
-//            Log.d("QueueDebug", "Queue visibility explicitly set to: $visible")
-//        }
-//    }
-
     fun playSong(song: Song) {
         try {
             // Release any existing MediaPlayer

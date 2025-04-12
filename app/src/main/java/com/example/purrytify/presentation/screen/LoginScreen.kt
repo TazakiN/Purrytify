@@ -42,8 +42,13 @@ fun LoginScreen(
     val viewModel: LoginViewModel = hiltViewModel()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val loginResult = viewModel.loginResult.collectAsState()
-    val isLoading = viewModel.isLoading.collectAsState()
+    val loginResult by viewModel.loginResult.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    var isLoginEnabled by remember { mutableStateOf(false) }
+
+    LaunchedEffect(email, password) {
+        isLoginEnabled = email.isNotBlank() && password.isNotBlank()
+    }
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -58,9 +63,9 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp)
-            , verticalArrangement = Arrangement.SpaceBetween
-            , horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 32.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
 
@@ -111,16 +116,21 @@ fun LoginScreen(
 
                 Button(
                     text = "Log In",
-                    onClick = { viewModel.login(email, password) }
+                    onClick = {
+                        if (isLoginEnabled) {
+                            viewModel.login(email, password)
+                        }
+                    },
+                    enabled = isLoginEnabled // Disable the button if fields are empty
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (isLoading.value) {
+                if (isLoading) {
                     CircularProgressIndicator(color = Color.White)
                 }
 
-                loginResult.value?.let { result ->
+                loginResult?.let { result ->
                     if (result.isFailure) {
                         Text(
                             result.exceptionOrNull()?.message ?: "Unknown error",
