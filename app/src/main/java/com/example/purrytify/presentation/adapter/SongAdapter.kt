@@ -3,6 +3,7 @@ package com.example.purrytify.presentation.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -12,13 +13,15 @@ import com.example.purrytify.domain.model.Song
 
 class SongAdapter(
     private var songs: List<Song>,
-    private val onItemClick: (Song) -> Unit
+    private val onItemClick: (Song) -> Unit,
+    private val onOptionsClick: (Song, View) -> Unit = { _, _ -> } // Added callback for options
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 
     inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val artworkImage: ImageView = itemView.findViewById(R.id.imageArtwork)
         val titleText: TextView = itemView.findViewById(R.id.textTitle)
         val artistText: TextView = itemView.findViewById(R.id.textArtist)
+        val optionsButton: ImageButton = itemView.findViewById(R.id.btnOptions) // Add this to your song_item.xml layout
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
@@ -40,6 +43,10 @@ class SongAdapter(
 
         holder.itemView.setOnClickListener {
             onItemClick(song)
+        }
+
+        holder.optionsButton.setOnClickListener {
+            onOptionsClick(song, it)
         }
     }
 

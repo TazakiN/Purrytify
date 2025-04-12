@@ -1,6 +1,7 @@
 package com.example.purrytify.presentation.fragments
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,10 +10,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -30,6 +33,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.purrytify.R
 import com.example.purrytify.presentation.theme.DarkGray
+import com.example.purrytify.presentation.theme.Green
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 
 @Composable
@@ -39,7 +43,13 @@ fun MiniPlayer(
 ) {
     val currentSong by viewModel.currentSong.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
+    val queue by viewModel.queue.collectAsState()
     val context = LocalContext.current
+
+    // Debug the queue indicator state when it changes
+    LaunchedEffect(queue) {
+        Log.d("QueueDebug", "MiniPlayer queue indicator - Queue size: ${queue.size}")
+    }
 
     if (currentSong == null) return // Don't show mini player if no song is playing
 
@@ -98,14 +108,54 @@ fun MiniPlayer(
                         .weight(1f)
                         .padding(horizontal = 12.dp)
                 ) {
-                    Text(
-                        text = currentSong?.title ?: "",
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = currentSong?.title ?: "",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        // Show queue indicator if songs are in the queue
+                        if (queue.isNotEmpty()) {
+                            // Use a simpler implementation that's more reliable
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .padding(end = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Background circle for badge
+                                Surface(
+                                    modifier = Modifier.size(16.dp),
+                                    shape = androidx.compose.foundation.shape.CircleShape,
+                                    color = Green
+                                ) {
+                                    // Number badge
+                                    Text(
+                                        text = "${queue.size}",
+                                        color = Color.Black,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.wrapContentSize(Alignment.Center)
+                                    )
+                                }
+                            }
+
+                            // Queue icon
+                            Icon(
+                                imageVector = Icons.Default.QueueMusic,
+                                contentDescription = "Queue",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
 
                     Text(
                         text = currentSong?.artist ?: "",

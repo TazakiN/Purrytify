@@ -1,6 +1,7 @@
 package com.example.purrytify
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,12 +29,14 @@ import com.example.purrytify.data.service.TokenRefreshService
 import com.example.purrytify.domain.model.NetworkStatus
 import com.example.purrytify.presentation.fragments.BottomNavigationBar
 import com.example.purrytify.presentation.fragments.MiniPlayer
+import com.example.purrytify.presentation.fragments.MissingFileDialog
 import com.example.purrytify.presentation.screen.HomeScreen
 import com.example.purrytify.presentation.screen.LibraryScreen
 import com.example.purrytify.presentation.screen.LoadingIndicatorScreen
 import com.example.purrytify.presentation.screen.LoginScreen
 import com.example.purrytify.presentation.screen.MusicPlayerScreen
 import com.example.purrytify.presentation.screen.ProfileScreen
+import com.example.purrytify.presentation.screen.QueueScreen
 import com.example.purrytify.presentation.theme.PurrytifyTheme
 import com.example.purrytify.presentation.viewmodel.MusicPlayerViewModel
 import com.example.purrytify.presentation.viewmodel.NetworkViewModel
@@ -49,6 +52,7 @@ sealed class Screen(val route: String, val title: String, val icon: Int) {
     data object Library : Screen("library", "Your Library", R.drawable.ic_library)
     data object Profile : Screen("profile", "Profile", R.drawable.ic_profile)
     data object Player : Screen("player", "Music Player", 0)
+    data object Queue : Screen("queue", "Play Queue", 0)
 }
 
 @AndroidEntryPoint
@@ -80,13 +84,19 @@ class MainActivity : AppCompatActivity() {
 
                 val currentSong by musicPlayerViewModel.currentSong.collectAsStateWithLifecycle()
                 val showFullPlayer by musicPlayerViewModel.showFullPlayer.collectAsStateWithLifecycle()
+                val showQueue by musicPlayerViewModel.showQueue.collectAsStateWithLifecycle()
+                val queueSize by musicPlayerViewModel.queue.collectAsStateWithLifecycle()
                 val networkStatus by networkViewModel.networkStatus.collectAsStateWithLifecycle()
 
                 var previousNetworkStatus by remember { mutableStateOf(NetworkStatus.Available) }
 
+                val missingFileSong by musicPlayerViewModel.missingFileSong.collectAsStateWithLifecycle()
+
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
-                val showBottomBar = currentRoute != Screen.Login.route && currentRoute != Screen.Player.route
+                val showBottomBar = currentRoute != Screen.Login.route &&
+                        currentRoute != Screen.Player.route &&
+                        currentRoute != Screen.Queue.route
                 val showMiniPlayer = showBottomBar && currentSong != null
 
                 // Navigation logic after splash and login status are known
@@ -116,7 +126,21 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                // Network status toast
+                // Show queue screen when requested - improved with better navigation logic
+                LaunchedEffect(showQueue) {
+                    if (showQueue) {
+                        if (currentRoute != Screen.Queue.route) {
+                            Log.d("QueueDebug", "Navigating to Queue screen. Current queue size: ${queueSize.size}")
+                            navController.navigate(Screen.Queue.route)
+                        }
+                    } else {
+                        if (currentRoute == Screen.Queue.route) {
+                            Log.d("QueueDebug", "Queue visibility turned off, navigating back")
+                            navController.popBackStack()
+                        }
+                    }
+                }
+
                 LaunchedEffect(networkStatus) {
                     if (networkStatus != previousNetworkStatus) {
                         if (networkStatus == NetworkStatus.Available && previousNetworkStatus != NetworkStatus.Available) {
@@ -133,6 +157,16 @@ class MainActivity : AppCompatActivity() {
                         previousNetworkStatus = networkStatus
                     }
                 }
+
+                LaunchedEffect(missingFileSong) {
+                    missingFileSong?.let { song ->
+                        val dialogFragment = MissingFileDialog(song)
+                        dialogFragment.show(supportFragmentManager, "MissingFileDialog")
+
+                        musicPlayerViewModel.resetMissingFileState()
+                    }
+                }
+
                 Scaffold(
                     bottomBar = {
                         if (showBottomBar) {
@@ -197,6 +231,14 @@ class MainActivity : AppCompatActivity() {
                                         musicPlayerViewModel.togglePlayerView()
                                         navController.popBackStack()
                                     }
+                                )
+                            }
+                            composable(Screen.Queue.route) {
+                                QueueScreen(
+                                    onBackPressed = {
+                                        navController.popBackStack()
+                                    },
+                                    viewModel = musicPlayerViewModel  // Pass the existing ViewModel instance
                                 )
                             }
                         }
